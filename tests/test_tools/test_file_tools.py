@@ -1,4 +1,5 @@
 """文件工具测试 - TDD 红色阶段先写"""
+
 import pytest
 
 from nano_code.tools.file_tools import edit_file, list_directory, read_file, write_file
@@ -82,11 +83,13 @@ class TestEditFile:
         file_path = tmp_path / "code.py"
         file_path.write_text("def hello():\n    print('world')")
 
-        result = edit_file.invoke({
-            "path": str(file_path),
-            "old_text": "print('world')",
-            "new_text": "print('hello')",
-        })
+        result = edit_file.invoke(
+            {
+                "path": str(file_path),
+                "old_text": "print('world')",
+                "new_text": "print('hello')",
+            }
+        )
 
         assert "成功" in result
         assert "print('hello')" in file_path.read_text()
@@ -96,11 +99,13 @@ class TestEditFile:
         file_path = tmp_path / "code.py"
         file_path.write_text("def hello():\n    pass")
 
-        result = edit_file.invoke({
-            "path": str(file_path),
-            "old_text": "nonexistent",
-            "new_text": "replacement",
-        })
+        result = edit_file.invoke(
+            {
+                "path": str(file_path),
+                "old_text": "nonexistent",
+                "new_text": "replacement",
+            }
+        )
 
         assert "未找到" in result or "错误" in result
 
@@ -109,11 +114,13 @@ class TestEditFile:
         file_path = tmp_path / "code.py"
         file_path.write_text("foo foo foo")
 
-        edit_file.invoke({
-            "path": str(file_path),
-            "old_text": "foo",
-            "new_text": "bar",
-        })
+        edit_file.invoke(
+            {
+                "path": str(file_path),
+                "old_text": "foo",
+                "new_text": "bar",
+            }
+        )
 
         content = file_path.read_text()
         assert content == "bar foo foo"

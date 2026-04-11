@@ -1,4 +1,5 @@
 """对话记忆管理"""
+
 import json
 from pathlib import Path
 
@@ -115,9 +116,7 @@ class ConversationMemory:
         discarded_count = len(other_messages) - keep_count
         if discarded_count > 0:
             # 创建一个占位摘要
-            summary = HumanMessage(
-                content=f"[系统] 已压缩 {discarded_count} 条早期对话"
-            )
+            summary = HumanMessage(content=f"[系统] 已压缩 {discarded_count} 条早期对话")
             self.messages = system_messages + [summary] + recent_messages
         else:
             self.messages = system_messages + recent_messages

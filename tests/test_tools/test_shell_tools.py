@@ -1,4 +1,5 @@
 """Shell 工具测试"""
+
 import pytest
 
 from nano_code.tools.shell_tools import run_command
@@ -34,10 +35,12 @@ class TestRunCommand:
         """应该能在指定目录执行命令"""
         (tmp_path / "test.txt").write_text("content")
 
-        result = run_command.invoke({
-            "command": "ls",
-            "cwd": str(tmp_path),
-        })
+        result = run_command.invoke(
+            {
+                "command": "ls",
+                "cwd": str(tmp_path),
+            }
+        )
 
         assert "test.txt" in result
 

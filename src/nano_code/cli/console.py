@@ -1,4 +1,5 @@
 """CLI 控制台输出"""
+
 from typing import Any
 
 from rich.console import Console
@@ -12,8 +13,7 @@ def print_welcome() -> None:
     """打印欢迎信息"""
     console.print(
         Panel.fit(
-            "[bold blue]Nano-Code[/bold blue] - 迷你版编码助手\n"
-            "输入你的问题，Ctrl+D 退出",
+            "[bold blue]Nano-Code[/bold blue] - 迷你版编码助手\n输入你的问题，Ctrl+D 退出",
             title="Welcome",
             border_style="blue",
         )

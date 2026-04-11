@@ -1,4 +1,5 @@
 """工具注册中心"""
+
 from typing import Any
 
 from langchain_core.tools import BaseTool

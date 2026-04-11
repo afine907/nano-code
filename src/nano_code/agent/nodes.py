@@ -1,4 +1,5 @@
 """Agent 节点实现"""
+
 from typing import Any, Literal
 
 from langchain_core.language_models import BaseChatModel

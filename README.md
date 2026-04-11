@@ -58,7 +58,7 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourusername/nano-code.git
+git clone https://github.com/afine907/nano-code.git
 cd nano-code
 
 # 安装依赖 (推荐使用 uv)

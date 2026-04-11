@@ -1,5 +1,4 @@
 """Pytest configuration and shared fixtures."""
-import os
 from pathlib import Path
 
 import pytest
@@ -28,13 +27,13 @@ if __name__ == "__main__":
 def sample_project(tmp_path):
     """Create a sample project structure for testing."""
     # Create main file
-    (tmp_path / "main.py").write_text('''
+    (tmp_path / "main.py").write_text("""
 def greet(name):
     print(f"Hello, {name}!")
 
 if __name__ == "__main__":
     greet("World")
-''')
+""")
 
     # Create README
     (tmp_path / "README.md").write_text("# Test Project\n\nA simple test project.")
@@ -42,9 +41,9 @@ if __name__ == "__main__":
     # Create subdirectory with files
     subdir = tmp_path / "src" / "utils"
     subdir.mkdir(parents=True)
-    (subdir / "helper.py").write_text('''
+    (subdir / "helper.py").write_text("""
 def add(a, b):
     return a + b
-''')
+""")
 
     return tmp_path

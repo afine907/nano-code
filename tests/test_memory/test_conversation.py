@@ -1,4 +1,5 @@
 """记忆系统测试"""
+
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 from nano_code.memory.conversation import ConversationMemory
@@ -138,9 +139,7 @@ class TestMemoryPersistence:
 
     def test_auto_save_on_add(self, tmp_path):
         """添加消息时应该自动保存（如果配置了）"""
-        memory = ConversationMemory(
-            storage_path=tmp_path / "memory.json", auto_save=True
-        )
+        memory = ConversationMemory(storage_path=tmp_path / "memory.json", auto_save=True)
 
         memory.add_message(HumanMessage(content="Test"))
 

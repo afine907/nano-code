@@ -1,4 +1,5 @@
 """Agent 状态定义"""
+
 from typing import Annotated, Any
 
 from typing_extensions import TypedDict
