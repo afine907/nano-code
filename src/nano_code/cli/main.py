@@ -1,7 +1,8 @@
 """CLI 主入口"""
+
 import sys
 
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from rich.markdown import Markdown
@@ -12,8 +13,6 @@ from nano_code.cli.console import (
     console,
     print_assistant,
     print_error,
-    print_tool_call,
-    print_tool_result,
     print_user,
     print_welcome,
 )
@@ -21,7 +20,7 @@ from nano_code.core.config import get_settings
 from nano_code.memory.conversation import ConversationMemory
 
 
-def run_interactive():
+def run_interactive() -> None:
     """运行交互式会话"""
     print_welcome()
 
@@ -34,7 +33,7 @@ def run_interactive():
     graph = get_agent_graph()
 
     # 初始化 prompt session
-    session = PromptSession(
+    session: PromptSession[str] = PromptSession(
         history=FileHistory(str(settings.storage_path / "history.txt")),
         multiline=True,
         mouse_support=True,
@@ -63,7 +62,11 @@ def run_interactive():
 
             # 运行 Agent
             state = create_initial_state(user_input)
-            state["messages"] = memory.get_context()
+            # 转换 BaseMessage 为 dict 格式
+            state["messages"] = [
+                {"role": "user" if msg.type == "human" else "assistant", "content": msg.content}
+                for msg in memory.get_context()
+            ]
 
             # 执行图
             result = graph.invoke(state)
@@ -85,8 +88,6 @@ def run_interactive():
                         print_assistant(response)
 
                     # 添加到记忆
-                    from langchain_core.messages import AIMessage
-
                     memory.add_message(AIMessage(content=response))
 
         except KeyboardInterrupt:
@@ -99,7 +100,7 @@ def run_interactive():
             print_error(str(e))
 
 
-def handle_command(command: str, memory: ConversationMemory):
+def handle_command(command: str, memory: ConversationMemory) -> None:
     """处理命令
 
     Args:
@@ -130,7 +131,7 @@ def handle_command(command: str, memory: ConversationMemory):
         console.print(f"[yellow]未知命令: {command}[/yellow]")
 
 
-def main():
+def main() -> None:
     """主入口"""
     try:
         run_interactive()

@@ -1,11 +1,11 @@
 """Agent 状态定义"""
+
 from typing import Annotated, Any
 
-from pydantic import BaseModel
 from typing_extensions import TypedDict
 
 
-def merge_lists(left: list, right: list) -> list:
+def merge_lists(left: list[Any] | None, right: list[Any] | None) -> list[Any]:
     """合并两个列表（用于 Annotated reducer）"""
     if left is None:
         left = []
@@ -26,7 +26,7 @@ class AgentState(TypedDict):
     """
 
     messages: Annotated[list[dict[str, Any]], merge_lists]
-    tool_calls: list[Any]
+    tool_calls: list[dict[str, Any]]
     tool_results: list[str]
     is_complete: bool
     iteration: int

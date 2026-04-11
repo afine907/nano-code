@@ -1,7 +1,6 @@
 """Agent 图测试"""
-from unittest.mock import MagicMock, patch
 
-import pytest
+from unittest.mock import MagicMock, patch
 
 from nano_code.agent.graph import build_agent_graph
 from nano_code.agent.state import AgentState
@@ -139,9 +138,7 @@ class TestExecuteNode:
 
         state = AgentState(
             messages=[],
-            tool_calls=[
-                {"name": "read_file", "args": {"path": "test.txt"}, "id": "call_123"}
-            ],
+            tool_calls=[{"name": "read_file", "args": {"path": "test.txt"}, "id": "call_123"}],
             tool_results=[],
             is_complete=False,
             iteration=0,

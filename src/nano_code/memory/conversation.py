@@ -1,7 +1,7 @@
 """对话记忆管理"""
+
 import json
 from pathlib import Path
-from typing import Any
 
 import tiktoken
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
@@ -22,7 +22,7 @@ class ConversationMemory:
         max_tokens: int = 100000,
         storage_path: Path | None = None,
         auto_save: bool = False,
-    ):
+    ) -> None:
         """初始化记忆管理
 
         Args:
@@ -42,7 +42,7 @@ class ConversationMemory:
         if storage_path and storage_path.exists():
             self.load()
 
-    def add_message(self, message: BaseMessage):
+    def add_message(self, message: BaseMessage) -> None:
         """添加消息
 
         Args:
@@ -66,7 +66,12 @@ class ConversationMemory:
         """
         total = 0
         for msg in self.messages:
-            total += len(self._encoding.encode(msg.content))
+            content = msg.content
+            if isinstance(content, str):
+                total += len(self._encoding.encode(content))
+            else:
+                # 对于复杂内容（如列表），转换为字符串处理
+                total += len(self._encoding.encode(str(content)))
         return total
 
     def get_context(self) -> list[BaseMessage]:
@@ -88,13 +93,13 @@ class ConversationMemory:
         """
         return self.messages[-n:] if n < len(self.messages) else self.messages.copy()
 
-    def clear(self):
+    def clear(self) -> None:
         """清空记忆"""
         self.messages = []
         if self.storage_path and self.storage_path.exists():
             self.storage_path.unlink()
 
-    def _compress(self):
+    def _compress(self) -> None:
         """压缩记忆：保留系统消息 + 最近消息"""
         if len(self.messages) <= 5:
             return
@@ -111,14 +116,12 @@ class ConversationMemory:
         discarded_count = len(other_messages) - keep_count
         if discarded_count > 0:
             # 创建一个占位摘要
-            summary = HumanMessage(
-                content=f"[系统] 已压缩 {discarded_count} 条早期对话"
-            )
+            summary = HumanMessage(content=f"[系统] 已压缩 {discarded_count} 条早期对话")
             self.messages = system_messages + [summary] + recent_messages
         else:
             self.messages = system_messages + recent_messages
 
-    def save(self):
+    def save(self) -> None:
         """保存记忆到文件"""
         if not self.storage_path:
             return
@@ -140,16 +143,16 @@ class ConversationMemory:
         with open(self.storage_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
-    def load(self):
+    def load(self) -> None:
         """从文件加载记忆"""
         if not self.storage_path or not self.storage_path.exists():
             return
 
-        with open(self.storage_path, "r", encoding="utf-8") as f:
+        with open(self.storage_path, encoding="utf-8") as f:
             data = json.load(f)
 
         # 反序列化消息
-        msg_classes = {
+        msg_classes: dict[str, type[BaseMessage]] = {
             "HumanMessage": HumanMessage,
             "AIMessage": AIMessage,
             "SystemMessage": SystemMessage,

@@ -1,5 +1,4 @@
 """搜索工具测试"""
-import pytest
 
 from nano_code.tools.search_tools import glob_search, grep_search
 
@@ -22,11 +21,13 @@ class TestGrepSearch:
         (tmp_path / "code.py").write_text("TODO: fix this")
         (tmp_path / "readme.md").write_text("TODO: document")
 
-        result = grep_search.invoke({
-            "pattern": "TODO",
-            "path": str(tmp_path),
-            "file_pattern": "*.py",
-        })
+        result = grep_search.invoke(
+            {
+                "pattern": "TODO",
+                "path": str(tmp_path),
+                "file_pattern": "*.py",
+            }
+        )
 
         assert "code.py" in result
         assert "readme.md" not in result

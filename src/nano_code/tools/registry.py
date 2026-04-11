@@ -1,4 +1,5 @@
 """工具注册中心"""
+
 from typing import Any
 
 from langchain_core.tools import BaseTool
@@ -14,11 +15,11 @@ class ToolRegistry:
     管理所有可用工具，提供注册、获取、执行功能。
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._tools: dict[str, BaseTool] = {}
         self._register_default_tools()
 
-    def _register_default_tools(self):
+    def _register_default_tools(self) -> None:
         """注册默认工具集"""
         default_tools = [
             # 文件工具
@@ -36,7 +37,7 @@ class ToolRegistry:
         for tool in default_tools:
             self._tools[tool.name] = tool
 
-    def register(self, tool: BaseTool):
+    def register(self, tool: BaseTool) -> None:
         """注册新工具
 
         Args:
@@ -72,7 +73,8 @@ class ToolRegistry:
         if tool is None:
             raise ValueError(f"Unknown tool: {name}")
 
-        return tool.invoke(args)
+        result = tool.invoke(args)
+        return str(result)
 
     def get_langchain_tools(self) -> list[BaseTool]:
         """获取所有 LangChain 格式的工具列表

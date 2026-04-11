@@ -1,11 +1,13 @@
 """LangGraph 状态图定义"""
+
 from langgraph.graph import END, StateGraph
+from langgraph.graph.state import CompiledStateGraph
 
 from nano_code.agent.nodes import execute_node, should_continue, thinking_node
 from nano_code.agent.state import AgentState
 
 
-def build_agent_graph() -> StateGraph:
+def build_agent_graph() -> CompiledStateGraph[AgentState, None, AgentState, AgentState]:
     """构建 Agent 状态图
 
     图结构:
@@ -41,10 +43,10 @@ def build_agent_graph() -> StateGraph:
 
 
 # 全局图实例（延迟创建）
-_graph = None
+_graph: CompiledStateGraph[AgentState, None, AgentState, AgentState] | None = None
 
 
-def get_agent_graph():
+def get_agent_graph() -> CompiledStateGraph[AgentState, None, AgentState, AgentState]:
     """获取 Agent 图实例（单例）"""
     global _graph
     if _graph is None:

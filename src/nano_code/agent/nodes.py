@@ -1,29 +1,32 @@
 """Agent 节点实现"""
-from typing import Literal
 
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from typing import Any, Literal
+
+from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
 
 from nano_code.agent.state import AgentState
+from nano_code.tools.registry import ToolRegistry
 
 # 最大迭代次数
 MAX_ITERATIONS = 50
 
 
-def get_llm():
+def get_llm() -> BaseChatModel:
     """获取 LLM 实例（延迟导入避免循环依赖）"""
     from nano_code.core.llm import get_llm as _get_llm
 
     return _get_llm()
 
 
-def get_tool_registry():
+def get_tool_registry() -> ToolRegistry:
     """获取工具注册表"""
-    from nano_code.tools.registry import ToolRegistry
+    from nano_code.tools.registry import get_tool_registry as _get_tool_registry
 
-    return ToolRegistry()
+    return _get_tool_registry()
 
 
-def thinking_node(state: AgentState) -> dict:
+def thinking_node(state: AgentState) -> dict[str, Any]:
     """思考节点：调用 LLM 决定下一步行动
 
     Args:
@@ -36,7 +39,7 @@ def thinking_node(state: AgentState) -> dict:
     registry = get_tool_registry()
 
     # 转换消息格式
-    messages = []
+    messages: list[BaseMessage] = []
     for msg in state["messages"]:
         if isinstance(msg, dict):
             role = msg.get("role", "user")
@@ -48,6 +51,7 @@ def thinking_node(state: AgentState) -> dict:
             else:
                 messages.append(HumanMessage(content=content))
         else:
+            # 已经是消息对象
             messages.append(msg)
 
     # 添加工具结果到消息
@@ -61,7 +65,7 @@ def thinking_node(state: AgentState) -> dict:
     response = llm_with_tools.invoke(messages)
 
     # 处理工具调用
-    tool_calls = []
+    tool_calls: list[dict[str, Any]] = []
     if hasattr(response, "tool_calls") and response.tool_calls:
         for tc in response.tool_calls:
             tool_calls.append(
@@ -76,9 +80,10 @@ def thinking_node(state: AgentState) -> dict:
     is_complete = len(tool_calls) == 0
 
     # 添加助手消息到历史
-    new_messages = []
+    new_messages: list[dict[str, Any]] = []
     if response.content:
-        new_messages.append({"role": "assistant", "content": response.content})
+        content = response.content if isinstance(response.content, str) else str(response.content)
+        new_messages.append({"role": "assistant", "content": content})
 
     return {
         "messages": new_messages,
@@ -89,7 +94,7 @@ def thinking_node(state: AgentState) -> dict:
     }
 
 
-def execute_node(state: AgentState) -> dict:
+def execute_node(state: AgentState) -> dict[str, Any]:
     """执行节点：运行工具调用
 
     Args:
@@ -99,7 +104,7 @@ def execute_node(state: AgentState) -> dict:
         更新后的状态片段
     """
     registry = get_tool_registry()
-    results = []
+    results: list[str] = []
 
     for tool_call in state["tool_calls"]:
         try:
