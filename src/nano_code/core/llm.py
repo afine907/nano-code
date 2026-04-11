@@ -5,6 +5,7 @@ import os
 from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models import BaseChatModel
 from langchain_openai import ChatOpenAI
+from pydantic import SecretStr
 
 from nano_code.core.config import get_settings
 
@@ -49,7 +50,7 @@ def get_llm(model: str | None = None, temperature: float = 0.7) -> BaseChatModel
         return ChatOpenAI(
             model=model_name,
             temperature=temperature,
-            api_key=api_key,
+            api_key=SecretStr(api_key),
             base_url=base_url,
         )
 
@@ -69,5 +70,5 @@ def get_llm(model: str | None = None, temperature: float = 0.7) -> BaseChatModel
     return ChatOpenAI(
         model=model_name,
         temperature=temperature,
-        api_key=api_key,
+        api_key=SecretStr(api_key),
     )
