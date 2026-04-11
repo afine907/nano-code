@@ -1,28 +1,28 @@
 """CLI 主入口"""
 
-import sys
-
+# 加载 .env 文件（必须在其他导入之前）
 from dotenv import load_dotenv
 
-# 加载 .env 文件（必须在其他导入之前）
 load_dotenv()
 
-from langchain_core.messages import AIMessage, HumanMessage
-from prompt_toolkit import PromptSession
-from prompt_toolkit.history import FileHistory
-from rich.markdown import Markdown
+import sys  # noqa: E402
 
-from nano_code.agent.graph import get_agent_graph
-from nano_code.agent.state import create_initial_state
-from nano_code.cli.console import (
+from langchain_core.messages import AIMessage, HumanMessage  # noqa: E402
+from prompt_toolkit import PromptSession  # noqa: E402
+from prompt_toolkit.history import FileHistory  # noqa: E402
+from rich.markdown import Markdown  # noqa: E402
+
+from nano_code.agent.graph import get_agent_graph  # noqa: E402
+from nano_code.agent.state import create_initial_state  # noqa: E402
+from nano_code.cli.console import (  # noqa: E402
     console,
     print_assistant,
     print_error,
     print_user,
     print_welcome,
 )
-from nano_code.core.config import get_settings
-from nano_code.memory.conversation import ConversationMemory
+from nano_code.core.config import get_settings  # noqa: E402
+from nano_code.memory.conversation import ConversationMemory  # noqa: E402
 
 
 def run_interactive() -> None:
