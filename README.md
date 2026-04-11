@@ -56,6 +56,21 @@
 
 ### 安装
 
+#### 方式一：从 PyPI 安装（推荐）
+
+```bash
+# 使用 pip
+pip install nano-code
+
+# 或使用 uv tool（推荐）
+uv tool install nano-code
+
+# 运行
+nano-code
+```
+
+#### 方式二：从源码安装（开发）
+
 ```bash
 # 克隆项目
 git clone https://github.com/afine907/nano-code.git
@@ -63,6 +78,9 @@ cd nano-code
 
 # 安装依赖 (推荐使用 uv)
 uv sync
+
+# 运行
+uv run nano-code
 ```
 
 ### 配置

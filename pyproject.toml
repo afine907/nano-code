@@ -3,10 +3,32 @@ name = "nano-code"
 version = "0.1.0"
 description = "A mini coding agent built with LangGraph - Learn Agent architecture through practice"
 readme = "README.md"
+license = "MIT"
 authors = [
     { name = "afine907", email = "1049905106@qq.com" }
 ]
 requires-python = ">=3.11"
+keywords = [
+    "agent",
+    "langgraph",
+    "langchain",
+    "coding-assistant",
+    "cli",
+    "llm",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
 dependencies = [
     "langgraph>=0.2",
     "langchain>=0.3",
@@ -29,6 +51,12 @@ dev = [
     "ruff>=0.4",
     "python-dotenv>=1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/afine907/nano-code"
+Documentation = "https://github.com/afine907/nano-code#readme"
+Repository = "https://github.com/afine907/nano-code"
+Issues = "https://github.com/afine907/nano-code/issues"
 
 [project.scripts]
 nano-code = "nano_code.cli.main:main"
