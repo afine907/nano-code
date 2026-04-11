@@ -17,6 +17,7 @@ dependencies = [
     "pydantic>=2",
     "pydantic-settings>=2",
     "tiktoken>=0.5",
+    "python-dotenv>=1",
 ]
 
 [project.optional-dependencies]
@@ -26,6 +27,7 @@ dev = [
     "pytest-cov>=4",
     "mypy>=1",
     "ruff>=0.4",
+    "python-dotenv>=1",
 ]
 
 [project.scripts]
@@ -51,3 +53,8 @@ ignore_missing_imports = true
 asyncio_mode = "auto"
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "e2e: 真实 API 调用的端到端测试",
+    "longcat: 使用 LongCat API 的测试",
+    "slow: 运行较慢的测试",
+]

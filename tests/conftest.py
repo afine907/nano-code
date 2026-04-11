@@ -1,5 +1,12 @@
 """Pytest configuration and shared fixtures."""
+import os
+from pathlib import Path
+
 import pytest
+from dotenv import load_dotenv
+
+# 加载 .env 文件（从项目根目录）
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 
 @pytest.fixture

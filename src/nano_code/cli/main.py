@@ -1,6 +1,11 @@
 """CLI 主入口"""
 import sys
 
+from dotenv import load_dotenv
+
+# 加载 .env 文件（必须在其他导入之前）
+load_dotenv()
+
 from langchain_core.messages import AIMessage, HumanMessage
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory

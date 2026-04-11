@@ -67,11 +67,23 @@ uv sync
 
 ### 配置
 
+创建 `.env` 文件（参考 `.env.example`）：
+
 ```bash
-# 设置 API 密钥
-export OPENAI_API_KEY=your-key-here
-# 或
-export ANTHROPIC_API_KEY=your-key-here
+# 方式 1: OpenAI 兼容 API（如 LongCat、DeepSeek 等）
+OPENAI_API_KEY=your-api-key
+OPENAI_BASE_URL=https://api.longcat.chat/openai/v1
+MODEL=LongCat-Flash-Chat
+
+# 方式 2: Anthropic Claude
+# OPENAI_API_KEY=
+# ANTHROPIC_API_KEY=your-anthropic-api-key
+# MODEL=claude-sonnet-4-20250514
+
+# 方式 3: OpenAI 默认
+# OPENAI_API_KEY=your-openai-api-key
+# OPENAI_BASE_URL=
+# NANO_CODE_MODEL=gpt-4o-mini
 ```
 
 ### 运行

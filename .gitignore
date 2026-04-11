@@ -28,6 +28,7 @@ htmlcov/
 .vscode/
 *.swp
 *.swo
+.claude/settings.local.json
 
 # OS files
 .DS_Store
