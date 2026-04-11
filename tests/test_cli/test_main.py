@@ -1,7 +1,7 @@
 """CLI 主入口测试"""
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-import sys
 
 from nano_code.cli.main import handle_command, main
 

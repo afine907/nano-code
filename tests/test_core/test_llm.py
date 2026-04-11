@@ -1,9 +1,8 @@
 """LLM 客户端测试"""
 import os
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from nano_code.core.llm import get_llm, DEFAULT_MODEL
+from nano_code.core.llm import DEFAULT_MODEL, get_llm
 
 
 class TestGetLLM:
@@ -22,7 +21,7 @@ class TestGetLLM:
 
         with patch("nano_code.core.llm.ChatOpenAI") as mock_openai:
             mock_openai.return_value = MagicMock()
-            llm = get_llm()
+            get_llm()
 
             mock_openai.assert_called_once()
             assert mock_openai.call_args[1]["model"] == DEFAULT_MODEL
@@ -32,7 +31,7 @@ class TestGetLLM:
         """有 Anthropic API Key 时应该返回 Anthropic 客户端"""
         with patch("nano_code.core.llm.ChatAnthropic") as mock_anthropic:
             mock_anthropic.return_value = MagicMock()
-            llm = get_llm()
+            get_llm()
 
             mock_anthropic.assert_called_once()
 
@@ -41,7 +40,7 @@ class TestGetLLM:
         """Anthropic 应该使用 Claude 模型"""
         with patch("nano_code.core.llm.ChatAnthropic") as mock_anthropic:
             mock_anthropic.return_value = MagicMock()
-            llm = get_llm(model="claude-sonnet-4-20250514")
+            get_llm(model="claude-sonnet-4-20250514")
 
             assert mock_anthropic.call_args[1]["model"].startswith("claude")
 
@@ -50,7 +49,7 @@ class TestGetLLM:
         """Anthropic 默认使用 Claude Sonnet"""
         with patch("nano_code.core.llm.ChatAnthropic") as mock_anthropic:
             mock_anthropic.return_value = MagicMock()
-            llm = get_llm(model="gpt-4")  # 非 Claude 模型名
+            get_llm(model="gpt-4")  # 非 Claude 模型名
 
             assert mock_anthropic.call_args[1]["model"] == "claude-sonnet-4-20250514"
 
@@ -58,7 +57,7 @@ class TestGetLLM:
         """应该接受自定义模型"""
         with patch("nano_code.core.llm.ChatOpenAI") as mock_openai:
             mock_openai.return_value = MagicMock()
-            llm = get_llm(model="gpt-4")
+            get_llm(model="gpt-4")
 
             assert mock_openai.call_args[1]["model"] == "gpt-4"
 
@@ -66,7 +65,7 @@ class TestGetLLM:
         """应该接受自定义温度"""
         with patch("nano_code.core.llm.ChatOpenAI") as mock_openai:
             mock_openai.return_value = MagicMock()
-            llm = get_llm(temperature=0.5)
+            get_llm(temperature=0.5)
 
             assert mock_openai.call_args[1]["temperature"] == 0.5
 
@@ -75,7 +74,7 @@ class TestGetLLM:
         """应该从环境变量读取模型"""
         with patch("nano_code.core.llm.ChatOpenAI") as mock_openai:
             mock_openai.return_value = MagicMock()
-            llm = get_llm()
+            get_llm()
 
             assert mock_openai.call_args[1]["model"] == "gpt-4-turbo"
 
@@ -84,6 +83,6 @@ class TestGetLLM:
         with patch.dict(os.environ, {"NANO_CODE_MODEL": "gpt-4-turbo"}):
             with patch("nano_code.core.llm.ChatOpenAI") as mock_openai:
                 mock_openai.return_value = MagicMock()
-                llm = get_llm(model="gpt-4")
+                get_llm(model="gpt-4")
 
                 assert mock_openai.call_args[1]["model"] == "gpt-4"

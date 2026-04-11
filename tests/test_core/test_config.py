@@ -1,8 +1,5 @@
 """配置管理测试"""
-import os
-import pytest
 from pathlib import Path
-from unittest.mock import patch
 
 from nano_code.core.config import Settings, get_settings
 

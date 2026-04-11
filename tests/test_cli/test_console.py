@@ -1,18 +1,15 @@
 """CLI 控制台输出测试"""
-import pytest
-from unittest.mock import patch, MagicMock
 
 from nano_code.cli.console import (
-    console,
-    print_welcome,
-    print_user,
+    format_code,
     print_assistant,
-    print_tool_call,
-    print_tool_result,
+    print_code,
     print_error,
     print_thinking,
-    format_code,
-    print_code,
+    print_tool_call,
+    print_tool_result,
+    print_user,
+    print_welcome,
 )
 
 
