@@ -138,9 +138,7 @@ def run_interactive() -> None:
             print_error(str(e))
 
 
-def handle_command(
-    command: str, memory: ConversationMemory, model: str
-) -> bool:
+def handle_command(command: str, memory: ConversationMemory, model: str) -> bool:
     """处理命令
 
     Args:
