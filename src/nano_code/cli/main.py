@@ -135,7 +135,10 @@ def run_interactive() -> None:
             console.print("\n[blue]👋 再见！[/blue]")
             break
         except Exception as e:
-            print_error(str(e))
+            import traceback
+
+            print_error(f"{e}")
+            console.print(f"[dim red]{traceback.format_exc()}[/dim red]")
 
 
 def handle_command(command: str, memory: ConversationMemory, model: str) -> bool:

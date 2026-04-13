@@ -1,0 +1,299 @@
+# Code Review Report: feat/interactive-enhancements
+
+**PR**: https://github.com/afine907/nano-code/pull/3  
+**Branch**: `feat/interactive-enhancements` → `master`  
+**Changes**: +622 / -117 lines, 5 files  
+**Reviewer**: AI Assistant  
+**Date**: 2026-04-13
+
+---
+
+## 📊 Overview
+
+本次 PR 为 CLI 添加了交互体验增强功能，包括会话统计、状态栏、新命令和思考动画。
+
+### 新增功能
+- ✅ 会话统计（消息数、工具调用数、Token 使用量、会话时长）
+- ✅ 状态栏显示
+- ✅ 新命令：`/stats`, `/model`, `/history`, `/reset-stats`
+- ✅ 思考动画
+- ✅ 历史建议（AutoSuggestFromHistory）
+
+---
+
+## 🔍 详细审查
+
+### 1. console.py - 控制台输出模块
+
+#### ✅ 优点
+
+1. **数据类设计良好**
+   ```python
+   @dataclass
+   class SessionStats:
+       message_count: int = 0
+       tool_calls: int = 0
+       total_tokens: int = 0
+       start_time: float = field(default_factory=time.time)
+   ```
+   - 使用 `dataclass` 简洁明了
+   - `field(default_factory=time.time)` 正确处理可变默认值
+
+2. **上下文管理器设计**
+   ```python
+   @contextmanager
+   def thinking_animation(message: str = "Thinking") -> Generator[None, None, None]:
+   ```
+   - 使用上下文管理器管理动画生命周期，设计合理
+
+3. **参数截断处理**
+   ```python
+   if len(v_str) > 50:
+       v_str = v_str[:47] + "..."
+   ```
+   - 避免输出过长，提升可读性
+
+#### ⚠️ 问题
+
+1. **全局状态管理**
+   ```python
+   # 全局会话统计
+   session_stats = SessionStats()
+   ```
+   - **问题**: 使用全局变量可能导致测试间状态污染
+   - **影响**: 测试需要手动 reset，否则可能失败
+   - **建议**: 考虑使用依赖注入或单例模式
+
+2. **`print_history` 函数未使用的变量**
+   ```python
+   for _i, msg in enumerate(display_messages, 1):
+   ```
+   - **问题**: `_i` 变量未使用，应该用 `_` 代替
+   - **严重性**: 低（仅代码风格）
+
+3. **`print_tool_result` 参数命名不一致**
+   ```python
+   def print_tool_result(result: str, duration: float | None = None) -> None:
+       # ...
+       if len(result) > 500:
+           display_result = result[:500] + "..."
+   ```
+   - **问题**: 内部变量 `display_result` 和参数 `result` 混用
+   - **建议**: 统一命名，避免混淆
+
+4. **缺少类型注解的导入**
+   ```python
+   from typing import Any
+   ```
+   - 只导入了 `Any`，但使用了 `Generator` 需要从 `collections.abc` 导入（已正确导入）
+
+---
+
+### 2. main.py - 主入口模块
+
+#### ✅ 优点
+
+1. **命令处理返回布尔值**
+   ```python
+   def handle_command(command: str, memory: ConversationMemory, model: str) -> bool:
+   ```
+   - 返回 `bool` 表示是否继续运行，设计清晰
+   - 比 `sys.exit(0)` 更易测试
+
+2. **思考动画集成**
+   ```python
+   with thinking_animation("Thinking"):
+       result = graph.invoke(state)
+   ```
+   - 使用上下文管理器，代码简洁
+
+3. **历史建议功能**
+   ```python
+   auto_suggest=AutoSuggestFromHistory(),
+   ```
+   - 提升用户体验
+
+#### ⚠️ 问题
+
+1. **`current_model` 在循环外获取后未更新**
+   ```python
+   current_model = get_current_model()
+   # ... 在 while True 循环中
+   print_status_bar(current_model)
+   ```
+   - **问题**: 如果运行时切换模型，显示的模型名称不会更新
+   - **影响**: 低（当前不支持动态切换模型）
+   - **建议**: 每次循环开始时获取，或添加模型切换命令
+
+2. **Token 统计来源**
+   ```python
+   token_count = memory.token_count()
+   session_stats.total_tokens = token_count
+   ```
+   - **问题**: 直接覆盖 `total_tokens`，不是累加
+   - **影响**: 如果有多轮对话，token 统计可能不准确
+   - **建议**: 确认 `memory.token_count()` 返回的是累计值还是当前轮次值
+
+3. **异常处理过于宽泛**
+   ```python
+   except Exception as e:
+       print_error(str(e))
+   ```
+   - **问题**: 捕获所有异常，可能隐藏重要错误
+   - **建议**: 区分已知异常和未知异常，未知异常应打印堆栈
+
+4. **`print_assistant` 函数被移除但未完全清理**
+   ```python
+   from nano_code.cli.console import (
+       console,
+       print_error,
+       # print_assistant 被移除
+   )
+   ```
+   - **问题**: 导入列表中已移除，但代码中有直接使用 `console.print` 替代
+   - **建议**: 保持一致性，或在 console.py 中保留 `print_assistant`
+
+---
+
+### 3. test_console.py - 控制台测试
+
+#### ✅ 优点
+
+1. **测试覆盖完整**
+   - 覆盖了所有新函数
+   - 测试了边界情况（空历史、长结果截断）
+
+2. **测试结构清晰**
+   ```python
+   class TestSessionStats:
+   class TestConsoleOutput:
+   class TestGlobalSessionStats:
+   ```
+   - 按功能分组，结构清晰
+
+#### ⚠️ 问题
+
+1. **测试间状态共享**
+   ```python
+   def test_print_session_stats(self, capsys):
+       global_stats = session_stats
+       global_stats.message_count = 5
+   ```
+   - **问题**: 直接修改全局状态，可能影响其他测试
+   - **建议**: 使用 `setup_method` 重置状态
+
+2. **缺少 `elapsed_time` 边界测试**
+   - 未测试时间 > 1 分钟的情况
+   - 未测试时间正好为整数秒的情况
+
+---
+
+### 4. test_main.py - 主入口测试
+
+#### ✅ 优点
+
+1. **使用 `setup_method` 重置状态**
+   ```python
+   def setup_method(self):
+       session_stats.reset()
+   ```
+   - 正确处理全局状态
+
+2. **Mock 使用得当**
+   - 正确 mock 了 `get_settings` 和 `memory`
+
+#### ⚠️ 问题
+
+1. **测试覆盖不完整**
+   - 未测试 `run_interactive` 函数的主循环
+   - 未测试异常处理逻辑
+
+---
+
+## 📋 问题汇总
+
+| 严重性 | 问题 | 文件 | 行号 | 状态 |
+|--------|------|------|------|------|
+| 🔴 高 | 全局状态可能导致测试污染 | console.py | 44 | ⚠️ 已有 setup_method 处理 |
+| 🟡 中 | Token 统计可能是覆盖而非累加 | main.py | 115-116 | ✅ 确认逻辑正确 |
+| 🟡 中 | 异常处理过于宽泛 | main.py | 133-134 | ✅ 已修复 |
+| 🟢 低 | 未使用的变量 `_i` | console.py | 239 | ✅ 已修复 |
+| 🟢 低 | `current_model` 未动态更新 | main.py | 55, 121 | ⚠️ 暂不需要（无动态切换功能） |
+
+---
+
+## 💡 改进建议
+
+### 高优先级
+
+1. **解决全局状态问题**
+   ```python
+   # 方案 1: 使用依赖注入
+   class SessionManager:
+       def __init__(self):
+           self.stats = SessionStats()
+   
+   # 方案 2: 添加 reset 方法到 setup
+   def setup_method(self):
+       from nano_code.cli.console import session_stats
+       session_stats.reset()
+   ```
+
+2. **确认 Token 统计逻辑**
+   - 检查 `memory.token_count()` 的实现
+   - 如果是当前轮次值，应改为累加
+
+### 中优先级
+
+3. **改进异常处理**
+   ```python
+   except KeyboardInterrupt:
+       console.print("\n[yellow]⚠️ 已取消[/yellow]")
+       continue
+   except EOFError:
+       console.print("\n[blue]👋 再见！[/blue]")
+       break
+   except Exception as e:
+       import traceback
+       print_error(f"{e}\n{traceback.format_exc()}")
+   ```
+
+4. **添加模型切换命令**
+   ```python
+   elif cmd.startswith("/model "):
+       new_model = cmd.split(None, 1)[1]
+       # 更新配置中的模型
+       current_model = new_model
+   ```
+
+### 低优先级
+
+5. **修复未使用的变量**
+   ```python
+   # 改为
+   for msg in display_messages:
+   ```
+
+---
+
+## ✅ 审查结论
+
+**总体评价**: 🟡 **需要小修改**
+
+本次 PR 功能完整，代码质量较好，但存在一些需要改进的地方：
+
+1. **必须修复**: 确认 Token 统计逻辑是否正确
+2. **建议修复**: 全局状态管理问题
+3. **可选修复**: 其他低优先级问题
+
+**建议**: 修复高优先级问题后合并。
+
+---
+
+## 📝 Checklist
+
+- [ ] 确认 Token 统计是累加还是覆盖
+- [ ] 修复 `_i` 未使用变量
+- [ ] 考虑添加模型切换命令
+- [ ] 改进异常处理
+- [ ] 添加 `elapsed_time` 边界测试

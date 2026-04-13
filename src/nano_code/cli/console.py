@@ -228,7 +228,7 @@ def print_history(messages: list[Any], limit: int = 10) -> None:
     # 显示最近的 N 条消息
     display_messages = messages[-limit:] if len(messages) > limit else messages
 
-    for _i, msg in enumerate(display_messages, 1):
+    for msg in display_messages:
         # 获取消息类型和内容
         msg_type = getattr(msg, "type", "unknown")
         content = getattr(msg, "content", str(msg))
