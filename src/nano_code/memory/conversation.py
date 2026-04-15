@@ -1,10 +1,66 @@
 """对话记忆管理"""
 
 import json
+from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import tiktoken
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+
+
+@dataclass
+class Message:
+    """简单的消息类（兼容旧 API）"""
+    role: str
+    content: str
+    metadata: dict = field(default_factory=dict)
+    timestamp: datetime = field(default_factory=datetime.now)
+
+
+@dataclass
+class Conversation:
+    """对话类（兼容旧 API）"""
+    id: str
+    messages: list = field(default_factory=list)
+    created_at: datetime = field(default_factory=datetime.now)
+    updated_at: datetime = field(default_factory=datetime.now)
+
+
+class MemoryStore:
+    """内存存储类（兼容旧 API）"""
+
+    def __init__(self):
+        self._data: dict = {}
+
+    def save(self, key: str, value: Any) -> None:
+        self._data[key] = value
+
+    def load(self, key: str) -> Any | None:
+        return self._data.get(key)
+
+    def delete(self, key: str) -> None:
+        self._data.pop(key, None)
+
+
+class ConversationManager:
+    """对话管理器（兼容旧 API）"""
+
+    def __init__(self, storage_path: Path | None = None):
+        self.storage_path = storage_path
+        self._conversations: dict[str, Conversation] = {}
+
+    def create_conversation(self, conversation_id: str) -> Conversation:
+        conv = Conversation(id=conversation_id)
+        self._conversations[conversation_id] = conv
+        return conv
+
+    def get_conversation(self, conversation_id: str) -> Conversation | None:
+        return self._conversations.get(conversation_id)
+
+    def list_conversations(self) -> list[Conversation]:
+        return list(self._conversations.values())
 
 
 class ConversationMemory:

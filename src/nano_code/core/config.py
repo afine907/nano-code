@@ -31,6 +31,19 @@ class Settings(BaseSettings):
 # 全局配置实例
 _settings: Settings | None = None
 
+# 为了向后兼容，添加别名
+Config = Settings
+
+
+def load_config() -> Settings:
+    """加载配置（兼容旧 API）"""
+    return get_settings()
+
+
+def validate_config(config: Settings) -> bool:
+    """验证配置（兼容旧 API）"""
+    return True  # Pydantic 会自动验证
+
 
 def get_settings() -> Settings:
     """获取配置实例（单例）"""

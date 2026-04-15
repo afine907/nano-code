@@ -23,6 +23,11 @@ from rich.table import Table
 
 console = Console()
 
+# 为了向后兼容，提供别名
+Console = console.__class__
+Spinner = Spinner
+ProgressBar = None  # 占位符，实际未实现
+
 
 @dataclass
 class SessionStats:

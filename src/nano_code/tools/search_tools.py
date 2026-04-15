@@ -104,3 +104,8 @@ def glob_search(pattern: str, path: str) -> str:
                 results.append(str(match))
 
     return "\n".join(results) if results else ""
+
+
+# 为了向后兼容，提供工具类别名
+GrepTool = grep_search
+WebSearchTool = None  # 未实现

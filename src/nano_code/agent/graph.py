@@ -52,3 +52,9 @@ def get_agent_graph() -> CompiledStateGraph[AgentState, None, AgentState, AgentS
     if _graph is None:
         _graph = build_agent_graph()
     return _graph
+
+
+# 为了向后兼容，提供别名（放在函数定义之后）
+AgentGraph = get_agent_graph  # 返回编译后的图
+Node = dict  # 节点使用字典表示
+Edge = tuple  # 边使用元组表示

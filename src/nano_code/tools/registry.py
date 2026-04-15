@@ -8,6 +8,9 @@ from nano_code.tools.file_tools import edit_file, list_directory, read_file, wri
 from nano_code.tools.search_tools import glob_search, grep_search
 from nano_code.tools.shell_tools import run_command
 
+# 为了向后兼容，提供别名
+Tool = BaseTool
+
 
 class ToolRegistry:
     """工具注册中心

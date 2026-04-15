@@ -32,6 +32,22 @@ class AgentState(TypedDict):
     iteration: int
 
 
+class StateManager:
+    """状态管理器（兼容旧 API）"""
+
+    def __init__(self):
+        self._state: dict = {}
+
+    def get(self, key: str, default: Any = None) -> Any:
+        return self._state.get(key, default)
+
+    def set(self, key: str, value: Any) -> None:
+        self._state[key] = value
+
+    def clear(self) -> None:
+        self._state.clear()
+
+
 def create_initial_state(user_message: str) -> AgentState:
     """创建初始状态
 
