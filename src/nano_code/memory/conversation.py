@@ -13,6 +13,7 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, System
 @dataclass
 class Message:
     """简单的消息类（兼容旧 API）"""
+
     role: str
     content: str
     metadata: dict = field(default_factory=dict)
@@ -22,6 +23,7 @@ class Message:
 @dataclass
 class Conversation:
     """对话类（兼容旧 API）"""
+
     id: str
     messages: list = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.now)
