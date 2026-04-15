@@ -11,6 +11,12 @@ from nano_code.tools.registry import ToolRegistry
 # 最大迭代次数
 MAX_ITERATIONS = 50
 
+# 为了向后兼容，提供节点类型别名
+ThinkNode = None  # 占位符
+ObserveNode = None  # 占位符
+ActNode = None  # 占位符
+RouterNode = None  # 占位符
+
 
 def get_llm() -> BaseChatModel:
     """获取 LLM 实例（延迟导入避免循环依赖）"""

@@ -1,6 +1,7 @@
 """LLM 客户端配置"""
 
 import os
+from typing import Any
 
 from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models import BaseChatModel
@@ -11,6 +12,29 @@ from nano_code.core.config import get_settings
 
 # 模型配置
 DEFAULT_MODEL = "gpt-4o-mini"
+
+# 为了向后兼容，提供客户端别名
+LLMClient = BaseChatModel  # 抽象基类
+
+
+class OpenAIClient:
+    """OpenAI 客户端兼容类"""
+
+    def __init__(self, model: str = "gpt-4o-mini", **kwargs: Any):
+        self._client = ChatOpenAI(model=model, **kwargs)
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        return self._client.invoke(*args, **kwargs)
+
+
+class AnthropicClient:
+    """Anthropic 客户端兼容类"""
+
+    def __init__(self, model: str = "claude-sonnet-4-20250514", **kwargs: Any):
+        self._client = ChatAnthropic(model=model, **kwargs)
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        return self._client.invoke(*args, **kwargs)
 
 
 def get_llm(model: str | None = None, temperature: float = 0.7) -> BaseChatModel:

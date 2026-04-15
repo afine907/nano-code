@@ -8,6 +8,10 @@ from nano_code.tools.file_tools import edit_file, list_directory, read_file, wri
 from nano_code.tools.search_tools import glob_search, grep_search
 from nano_code.tools.shell_tools import run_command
 
+# 为了向后兼容，提供别名
+Tool = BaseTool
+tool = BaseTool  # 装饰器兼容
+
 
 class ToolRegistry:
     """工具注册中心
@@ -91,6 +95,20 @@ class ToolRegistry:
             工具名称列表
         """
         return list(self._tools.keys())
+
+    def unregister(self, name: str) -> bool:
+        """注销工具
+
+        Args:
+            name: 工具名称
+
+        Returns:
+            是否成功注销
+        """
+        if name in self._tools:
+            del self._tools[name]
+            return True
+        return False
 
 
 # 全局注册表实例

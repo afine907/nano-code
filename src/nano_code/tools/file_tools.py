@@ -4,6 +4,9 @@ from pathlib import Path
 
 from langchain_core.tools import tool
 
+# 从 search_tools 导入需要的函数
+from nano_code.tools.search_tools import glob_search
+
 
 @tool
 def read_file(path: str, line_numbers: bool = False) -> str:
@@ -109,3 +112,11 @@ def list_directory(path: str) -> str:
             items.append(f"[FILE] {item.name}")
 
     return "\n".join(items) if items else "(空目录)"
+
+
+# 为了向后兼容，提供工具类别名（放在函数定义之后）
+ReadFileTool = read_file
+WriteFileTool = write_file
+EditFileTool = edit_file
+ListDirectoryTool = list_directory
+SearchFilesTool = glob_search

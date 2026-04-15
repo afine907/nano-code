@@ -33,6 +33,34 @@ from nano_code.core.config import get_settings  # noqa: E402
 from nano_code.memory.conversation import ConversationMemory  # noqa: E402
 
 
+class CLI:
+    """CLI 主类"""
+
+    def __init__(self):
+        self.version = "0.1.0"
+        self._settings = get_settings()
+
+    def get_help(self) -> str:
+        """获取帮助信息"""
+        return """
+Nano Code CLI - 帮助信息
+
+可用命令:
+  /help     - 显示帮助
+  /version  - 显示版本
+  /status   - 显示状态
+  /exit     - 退出
+
+快捷键:
+  Ctrl+C    - 中断当前操作
+  Ctrl+D    - 退出程序
+"""
+
+    def run(self) -> None:
+        """运行 CLI"""
+        main()
+
+
 def get_current_model() -> str:
     """获取当前模型名称"""
     settings = get_settings()

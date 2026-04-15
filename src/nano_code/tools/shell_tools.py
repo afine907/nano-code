@@ -50,3 +50,8 @@ def run_command(
         raise TimeoutError(f"命令执行超时（{timeout}秒）: {command}") from e
     except Exception as e:
         return f"Error: {e}"
+
+
+# 为了向后兼容，提供工具类别名
+ExecuteCommandTool = run_command
+RunScriptTool = run_command  # 使用同一个函数
