@@ -2,12 +2,8 @@
 Nano Code - Memory 模块单元测试
 """
 
-import json
 import os
 import tempfile
-from datetime import datetime
-
-import pytest
 
 from nano_code.memory.conversation import (
     Conversation,
@@ -165,7 +161,7 @@ class TestConversationPersistence:
         """测试加载对话"""
         with tempfile.TemporaryDirectory() as tmpdir:
             manager = ConversationManager(storage_path=tmpdir)
-            conv = manager.create_conversation("test")
+            manager.create_conversation("test")
             loaded = manager.get_conversation("test")
             assert loaded is not None
 
@@ -176,7 +172,7 @@ class TestCompatibility:
 
     def test_imports(self):
         """测试导入"""
-        from nano_code.memory.conversation import Conversation, Message, MemoryStore
+        from nano_code.memory.conversation import Conversation, MemoryStore, Message
 
         assert Message is not None
         assert Conversation is not None

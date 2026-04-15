@@ -228,7 +228,7 @@ class RateLimiter:
                 await asyncio.sleep(0.1)
         else:
             if not await self.check():
-                raise RateLimitExceeded("Rate limit exceeded")
+                raise RateLimitError("Rate limit exceeded")
 
 
 class QuotaManager:
@@ -272,7 +272,7 @@ class QuotaManager:
             return
 
         if not await self.check_quota(quota_name, amount):
-            raise QuotaExceeded(f"Quota exceeded: {quota_name}")
+            raise QuotaError(f"Quota exceeded: {quota_name}")
 
         async with self._lock:
             record = UsageRecord(timestamp=datetime.now(), amount=amount, metadata=metadata or {})

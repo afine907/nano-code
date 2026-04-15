@@ -2,10 +2,7 @@
 Nano Code - Core 模块单元测试
 """
 
-import os
-from unittest.mock import Mock, patch
 
-import pytest
 
 
 class TestConfig:
@@ -25,7 +22,6 @@ class TestSettings:
 
     def test_settings_defaults(self):
         """测试默认设置"""
-        from pydantic_settings import BaseSettings
 
         from nano_code.core.config import Settings
 
@@ -52,7 +48,7 @@ class TestCompatibility:
 
     def test_config_imports(self):
         """测试配置导入"""
-        from nano_code.core.config import Config, Settings, get_settings, load_config
+        from nano_code.core.config import Config, Settings
 
         assert Config is not None
         assert Settings is not None
@@ -60,9 +56,6 @@ class TestCompatibility:
     def test_llm_imports(self):
         """测试 LLM 导入"""
         from nano_code.core.llm import (
-            AnthropicClient,
-            LLMClient,
-            OpenAIClient,
             get_llm,
         )
 

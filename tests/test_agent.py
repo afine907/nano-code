@@ -2,10 +2,9 @@
 Nano Code - Agent 模块单元测试
 """
 
-import pytest
 
 from nano_code.agent.graph import get_agent_graph
-from nano_code.agent.state import AgentState, StateManager, create_initial_state
+from nano_code.agent.state import StateManager, create_initial_state
 
 
 class TestAgentState:
@@ -101,12 +100,12 @@ class TestCompatibility:
 
     def test_agent_graph_alias(self):
         """测试 AgentGraph 别名"""
-        from nano_code.agent.graph import AgentGraph, Edge, Node
+        from nano_code.agent.graph import AgentGraph
         # 这些是别名，不应报错
         assert AgentGraph is not None
 
     def test_node_edge_alias(self):
         """测试 Node Edge 别名"""
-        from nano_code.agent.graph import Node, Edge
+        from nano_code.agent.graph import Edge, Node
         assert Node is not None
         assert Edge is not None

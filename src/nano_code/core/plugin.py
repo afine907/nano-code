@@ -378,19 +378,19 @@ PLUGIN_METADATA = {{
 
 class {name.replace("-", "_").title().replace("_", "")}Plugin:
     """插件主类"""
-    
+
     async def on_load(self):
         """插件加载"""
         print("Loading {name}...")
-    
+
     async def on_unload(self):
         """插件卸载"""
         print("Unloading {name}...")
-    
+
     async def on_enable(self):
         """插件启用"""
         print("Enabling {name}...")
-    
+
     async def on_disable(self):
         """插件禁用"""
         print("Disabling {name}...")

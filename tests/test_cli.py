@@ -2,7 +2,6 @@
 Nano Code - CLI 模块单元测试
 """
 
-import pytest
 
 
 class TestCLI:
@@ -65,7 +64,6 @@ class TestCompatibility:
     def test_cli_imports(self):
         """测试 CLI 导入"""
         from nano_code.cli.main import CLI, main
-        from nano_code.cli.console import console, print_error, print_help
 
         assert CLI is not None
         assert main is not None

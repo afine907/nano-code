@@ -4,13 +4,12 @@ Nano Code - Tools 模块单元测试
 
 import os
 import tempfile
-from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from nano_code.tools.file_tools import read_file, write_file, edit_file, list_directory
-from nano_code.tools.registry import ToolRegistry, Tool, tool
-from nano_code.tools.search_tools import grep_search, glob_search
+from nano_code.tools.file_tools import list_directory, read_file, write_file
+from nano_code.tools.registry import Tool, ToolRegistry
+from nano_code.tools.search_tools import glob_search, grep_search
 from nano_code.tools.shell_tools import run_command
 
 
@@ -72,7 +71,7 @@ class TestReadFileTool:
 
     def test_read_nonexistent_file(self):
         """测试读取不存在的文件"""
-        with pytest.raises(Exception):
+        with pytest.raises((FileNotFoundError, OSError)):
             read_file.invoke({'path': '/nonexistent/file.txt'})
 
     def test_read_with_line_numbers(self):
@@ -103,7 +102,7 @@ class TestWriteFileTool:
         """测试写入时创建目录"""
         with tempfile.TemporaryDirectory() as tmpdir:
             file_path = os.path.join(tmpdir, 'subdir', 'test.txt')
-            result = write_file.invoke({'path': file_path, 'content': 'hello'})
+            write_file.invoke({'path': file_path, 'content': 'hello'})
             assert os.path.exists(file_path)
 
 
@@ -146,7 +145,7 @@ class TestExecuteCommandTool:
 
     def test_execute_with_timeout(self):
         """测试超时执行"""
-        with pytest.raises(Exception):
+        with pytest.raises((FileNotFoundError, OSError)):
             run_command.invoke({'command': 'sleep 10', 'timeout': 1})
 
 
