@@ -10,6 +10,7 @@ from nano_code.tools.shell_tools import run_command
 
 # 为了向后兼容，提供别名
 Tool = BaseTool
+tool = BaseTool  # 装饰器兼容
 
 
 class ToolRegistry:
