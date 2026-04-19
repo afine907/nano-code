@@ -51,18 +51,18 @@ def request_user_confirmation(result: PermissionResult) -> bool:
         table.add_row("原因", f"[dim]{result.reason}[/dim]")
 
     # 显示确认面板
-    console.print(Panel(
-        table,
-        title="[bold yellow]⚠️  操作需要确认[/bold yellow]",
-        border_style="yellow",
-    ))
+    console.print(
+        Panel(
+            table,
+            title="[bold yellow]⚠️  操作需要确认[/bold yellow]",
+            border_style="yellow",
+        )
+    )
 
     # 请求用户输入
     while True:
         try:
-            response = console.input(
-                "\n[bold]允许执行? [Y/n/a(始终允许)]: [/bold]"
-            ).strip().lower()
+            response = console.input("\n[bold]允许执行? [Y/n/a(始终允许)]: [/bold]").strip().lower()
 
             if response in ("y", "yes", ""):
                 console.print("[green]✓ 已批准[/green]\n")
@@ -75,9 +75,7 @@ def request_user_confirmation(result: PermissionResult) -> bool:
                 console.print("[green]✓ 已批准（始终允许）[/green]\n")
                 return True
             else:
-                console.print(
-                    "[dim]请输入 Y (允许), N (拒绝) 或 A (始终允许)[/dim]"
-                )
+                console.print("[dim]请输入 Y (允许), N (拒绝) 或 A (始终允许)[/dim]")
         except (KeyboardInterrupt, EOFError):
             console.print("\n[red]✗ 已取消[/red]\n")
             return False

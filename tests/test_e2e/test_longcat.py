@@ -150,9 +150,7 @@ class TestLongCatAgentIntegration:
         test_file.write_text("print('Hello World')")
 
         graph = build_agent_graph()
-        state = create_initial_state(
-            f"请读取文件 {test_file}，然后执行它"
-        )
+        state = create_initial_state(f"请读取文件 {test_file}，然后执行它")
         result = graph.invoke(state)
 
         assert result is not None
