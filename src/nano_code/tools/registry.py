@@ -6,7 +6,20 @@ from typing import Any
 from langchain_core.tools import BaseTool
 
 from nano_code.security.permission import PermissionResult
+from nano_code.tools.code_analysis_tools import (
+    analyze_python_file,
+    check_code_style,
+    find_python_dependencies,
+    suggest_refactoring,
+)
 from nano_code.tools.file_tools import edit_file, list_directory, read_file, write_file
+from nano_code.tools.git_tools import git_blame, git_branch, git_diff, git_info, git_log, git_status
+from nano_code.tools.performance_tools import (
+    analyze_function_complexity,
+    benchmark_code_snippet,
+    profile_python_file,
+    suggest_performance_optimizations,
+)
 from nano_code.tools.search_tools import glob_search, grep_search
 from nano_code.tools.shell_tools import run_command
 
@@ -62,6 +75,23 @@ class ToolRegistry:
             glob_search,
             # Shell 工具
             run_command,
+            # 代码分析工具
+            analyze_python_file,
+            find_python_dependencies,
+            check_code_style,
+            suggest_refactoring,
+            # Git 工具
+            git_status,
+            git_diff,
+            git_log,
+            git_blame,
+            git_branch,
+            git_info,
+            # 性能工具
+            profile_python_file,
+            analyze_function_complexity,
+            suggest_performance_optimizations,
+            benchmark_code_snippet,
         ]
 
         for tool in default_tools:

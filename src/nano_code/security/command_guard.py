@@ -19,9 +19,9 @@ class CommandGuard(BaseGuard):
     """
 
     # 网络相关命令
-    NETWORK_COMMANDS = frozenset([
-        "curl", "wget", "nc", "netcat", "ssh", "scp", "rsync", "ftp", "telnet"
-    ])
+    NETWORK_COMMANDS = frozenset(
+        ["curl", "wget", "nc", "netcat", "ssh", "scp", "rsync", "ftp", "telnet"]
+    )
 
     def __init__(
         self,
