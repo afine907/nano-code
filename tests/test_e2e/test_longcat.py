@@ -115,7 +115,6 @@ class TestLongCatAgentIntegration:
         from nano_code.agent.graph import build_agent_graph
         from nano_code.agent.state import create_initial_state
 
-        # 创建测试文件
         test_file = tmp_path / "test.txt"
         test_file.write_text("这是一个测试文件的内容。\n第二行内容。")
 
@@ -125,3 +124,52 @@ class TestLongCatAgentIntegration:
 
         assert result is not None
         print(f"\n最终状态: {result}")
+
+    @pytest.mark.slow
+    def test_agent_with_shell_tool(self, longcat_configured, tmp_path):
+        """测试 Agent 调用 shell 工具"""
+        from nano_code.agent.graph import build_agent_graph
+        from nano_code.agent.state import create_initial_state
+
+        graph = build_agent_graph()
+        state = create_initial_state("列出当前目录的文件")
+        result = graph.invoke(state)
+
+        assert result is not None
+        messages = result.get("messages", [])
+        assert len(messages) > 0
+        print(f"\n响应: {messages[-1]}")
+
+    @pytest.mark.slow
+    def test_agent_combined_flow(self, longcat_configured, tmp_path):
+        """测试 Agent 组合流程：创建文件 → 读取 → 执行"""
+        from nano_code.agent.graph import build_agent_graph
+        from nano_code.agent.state import create_initial_state
+
+        test_file = tmp_path / "hello.py"
+        test_file.write_text("print('Hello World')")
+
+        graph = build_agent_graph()
+        state = create_initial_state(
+            f"请读取文件 {test_file}，然后执行它"
+        )
+        result = graph.invoke(state)
+
+        assert result is not None
+        messages = result.get("messages", [])
+        assert len(messages) > 0
+        print(f"\n最终状态: {result}")
+
+    @pytest.mark.slow
+    def test_agent_error_handling(self, longcat_configured):
+        """测试 Agent 异常处理"""
+        from nano_code.agent.graph import build_agent_graph
+        from nano_code.agent.state import create_initial_state
+
+        graph = build_agent_graph()
+
+        state = create_initial_state("")
+        result = graph.invoke(state)
+
+        assert result is not None
+        print(f"\n空输入处理: {result}")
