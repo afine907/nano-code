@@ -1,10 +1,6 @@
 """Web 搜索工具测试"""
 
-import sys
-import types
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 
 def test_web_search_basic():
