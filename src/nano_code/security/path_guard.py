@@ -85,9 +85,7 @@ class PathGuard(BaseGuard):
                 )
 
         # 3. 检查白名单
-        in_whitelist = any(
-            self._match_pattern(relative_path, p) for p in self.allowed_patterns
-        )
+        in_whitelist = any(self._match_pattern(relative_path, p) for p in self.allowed_patterns)
         if not in_whitelist:
             return PermissionResult(
                 PermissionLevel.DENY,
