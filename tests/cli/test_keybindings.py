@@ -26,6 +26,7 @@ class TestKeyBinding:
 
     def test_full_creation(self):
         """测试完整创建"""
+
         def dummy_handler():
             pass
 
