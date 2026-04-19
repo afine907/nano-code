@@ -110,9 +110,8 @@ class FilePathCompleter(Completer):
         try:
             for item in base.iterdir():
                 name = item.name
+                # 有前缀时过滤匹配项，无前缀时显示所有
                 if prefix and not self._matches(name, prefix):
-                    continue
-                if not prefix:
                     continue
 
                 if item.is_dir():
@@ -124,7 +123,7 @@ class FilePathCompleter(Completer):
 
                 yield Completion(
                     completion,
-                    start_position=-len(prefix),
+                    start_position=-len(prefix) if prefix else 0,
                     display=display,
                 )
         except PermissionError:

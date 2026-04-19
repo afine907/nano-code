@@ -166,7 +166,10 @@ class SessionManager:
 
         session = self._sessions[session_id]
         if session.storage_path and session.storage_path.exists():
-            session.storage_path.unlink()
+            try:
+                session.storage_path.unlink()
+            except OSError:
+                pass  # 忽略删除失败，继续清理内存状态
 
         del self._sessions[session_id]
 
