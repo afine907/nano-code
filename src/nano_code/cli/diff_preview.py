@@ -202,7 +202,7 @@ class DiffPreview:
             output_lines.append(f"\n[bold]{file.new_path or file.old_path}[/bold]")
             output_lines.append(f"[dim]+{file.additions} / -{file.deletions}[/dim]")
 
-            for line in files[0].lines:
+            for line in file.lines:  # 修复：使用当前文件的行，而非 files[0]
                 prefix = self._get_line_prefix(line.type)
                 num_str = self._format_line_nums(line)
                 output_lines.append(f"{prefix} {num_str} {line.content}")
@@ -223,11 +223,11 @@ class DiffPreview:
         """格式化行号"""
         old = line.old_line_num
         new = line.new_line_num
-        if old and new:
+        if old is not None and new is not None:
             return f"{old:4d} {new:4d}"
-        elif new:
+        elif new is not None:
             return f"     {new:4d}"
-        elif old:
+        elif old is not None:
             return f"{old:4d}"
         return "        "
 
