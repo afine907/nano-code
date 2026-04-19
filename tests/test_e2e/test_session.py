@@ -86,9 +86,7 @@ class TestSessionWithAgent:
     """需要 Agent 的会话测试（需要 API）"""
 
     @pytest.mark.slow
-    def test_full_conversation_with_agent(
-        self, longcat_configured, tmp_path
-    ):
+    def test_full_conversation_with_agent(self, longcat_configured, tmp_path):
         """测试：完整对话链 + 持久化 + 恢复"""
         from nano_code.agent.graph import build_agent_graph
         from nano_code.agent.state import create_initial_state
@@ -103,11 +101,7 @@ class TestSessionWithAgent:
         messages = result.get("messages", [])
         if messages:
             last_msg = messages[-1]
-            content = (
-                last_msg.content
-                if hasattr(last_msg, "content")
-                else last_msg.get("content")
-            )
+            content = last_msg.content if hasattr(last_msg, "content") else last_msg.get("content")
             memory.add_message(HumanMessage(content="用户: 你好"))
             memory.add_message(HumanMessage(content=content or "响应"))
 
