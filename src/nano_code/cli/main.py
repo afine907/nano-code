@@ -7,7 +7,6 @@ load_dotenv()
 
 import os
 import sys
-from pathlib import Path  # noqa: E402
 
 from langchain_core.messages import AIMessage, HumanMessage  # noqa: E402
 from prompt_toolkit import PromptSession  # noqa: E402
@@ -19,7 +18,7 @@ from nano_code import __version__
 from nano_code.agent.graph import get_agent_graph  # noqa: E402
 from nano_code.agent.state import create_initial_state  # noqa: E402
 from nano_code.cli.args import parse_args  # noqa: E402
-from nano_code.cli.config_wizard import ConfigWizard, run_wizard_if_needed  # noqa: E402
+from nano_code.cli.config_wizard import ConfigWizard  # noqa: E402
 from nano_code.cli.console import (  # noqa: E402
     console,
     print_error,
@@ -36,7 +35,7 @@ from nano_code.cli.console import (  # noqa: E402
 )
 from nano_code.cli.modes import ModeManager, get_mode_manager  # noqa: E402
 from nano_code.core.config import get_settings  # noqa: E402
-from nano_code.core.exceptions import ConfigError, LLMError, NanoCodeError  # noqa: E402
+from nano_code.core.exceptions import NanoCodeError  # noqa: E402
 from nano_code.memory.conversation import ConversationMemory  # noqa: E402
 
 
@@ -66,7 +65,7 @@ Nano Code CLI - 帮助信息
 
     def run(self, args=None) -> None:
         """运行 CLI
-        
+
         Args:
             args: 命令行参数（用于测试）
         """
@@ -81,44 +80,44 @@ def get_current_model() -> str:
 
 def run_non_interactive(prompt: str, model: str | None = None) -> None:
     """运行非交互模式
-    
+
     Args:
         prompt: 用户提示
         model: 指定模型（可选）
     """
     from rich.panel import Panel
-    
+
     # 检查配置
     wizard = ConfigWizard()
     if not wizard.check_config():
         console.print("[red]❌ 请先运行配置向导: nano-code[/red]")
         sys.exit(1)
-    
+
     # 加载配置
     settings = get_settings()
-    
+
     # 覆盖模型（如果指定）
     if model:
         os.environ["MODEL"] = model
-    
-    console.print(Panel.fit(
-        f"[bold]Nano Code {__version__}[/bold]\n"
-        f"模型: {model or settings.model}\n"
-        f"模式: 非交互",
-        border_style="blue",
-    ))
-    
+
+    console.print(
+        Panel.fit(
+            f"[bold]Nano Code {__version__}[/bold]\n模型: {model or settings.model}\n模式: 非交互",
+            border_style="blue",
+        )
+    )
+
     # 初始化 Agent
     graph = get_agent_graph()
-    
+
     # 执行提示
     console.print(f"\n[bold green]User:[/bold green] {prompt}")
     console.print("\n[bold blue]🤖 Assistant:[/bold blue]")
-    
+
     try:
         state = create_initial_state(prompt)
         state["messages"] = [{"role": "user", "content": prompt}]
-        
+
         full_response = ""
         for chunk in graph.stream(state):
             for node_name, node_output in chunk.items():
@@ -131,19 +130,19 @@ def run_non_interactive(prompt: str, model: str | None = None) -> None:
                             content = getattr(msg, "content", "")
                         if content and isinstance(content, str):
                             full_response += content
-        
+
         if full_response:
             try:
                 console.print(Markdown(full_response))
             except Exception:
                 console.print(full_response)
-    
+
     except NanoCodeError as e:
         console.print(f"[red]❌ {e.message}[/red]")
         if e.hint:
             console.print(f"[dim]💡 {e.hint}[/dim]")
         sys.exit(1)
-    
+
     except Exception as e:
         console.print(f"[red]❌ 发生错误: {e}[/red]")
         sys.exit(1)
@@ -160,7 +159,7 @@ def run_interactive() -> None:
             sys.exit(1)
         # 重新加载配置
         load_dotenv(override=True)
-    
+
     print_welcome()
 
     # 初始化记忆
@@ -259,13 +258,13 @@ def run_interactive() -> None:
 
                     # 添加到记忆
                     memory.add_message(AIMessage(content=full_response))
-            
+
             except NanoCodeError as e:
                 console.print(f"\n[red]❌ {e.message}[/red]")
                 if e.hint:
                     console.print(f"[dim]💡 {e.hint}[/dim]")
                 continue
-            
+
             except KeyboardInterrupt:
                 console.print("\n[yellow]⚠️ 已取消[/yellow]")
                 continue
@@ -339,7 +338,7 @@ def handle_command(
         session_stats.reset()
         print_success("统计已重置")
         print_status_bar(model)
-    
+
     elif cmd == "/config":
         # 重新运行配置向导
         wizard = ConfigWizard()
@@ -359,25 +358,25 @@ def handle_command(
 
 def main(args=None) -> None:
     """主入口
-    
+
     Args:
         args: 命令行参数（用于测试）
     """
     # 解析命令行参数
     parsed_args = parse_args(args)
-    
+
     # 处理配置文件
     if parsed_args.config:
         load_dotenv(parsed_args.config, override=True)
-    
+
     # 处理工作目录
     if parsed_args.dir:
         os.chdir(parsed_args.dir)
-    
+
     # 处理模型覆盖
     if parsed_args.model:
         os.environ["MODEL"] = parsed_args.model
-    
+
     # 非交互模式
     if parsed_args.prompt or parsed_args.non_interactive:
         if parsed_args.prompt:
@@ -386,7 +385,7 @@ def main(args=None) -> None:
             console.print("[red]错误: 非交互模式需要使用 -p/--prompt 指定提示[/red]")
             sys.exit(1)
         return
-    
+
     # 交互模式
     try:
         run_interactive()
