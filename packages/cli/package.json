@@ -1,0 +1,26 @@
+{
+  "name": "@nano-code/cli",
+  "version": "0.1.0",
+  "description": "Nano Code CLI",
+  "type": "module",
+  "bin": {
+    "nano-code": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.tsx",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "ink": "^4.4.1",
+    "ink-spinner": "^5.0.0",
+    "ink-text-input": "^5.0.1",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.3.0"
+  }
+}
