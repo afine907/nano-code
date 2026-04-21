@@ -98,6 +98,7 @@ export function App() {
         onSubmit={handleSubmit} 
         disabled={isLoading}
         mode={mode}
+        onToggleMode={toggleMode}
       />
       
       {/* 状态栏 */}

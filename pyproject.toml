@@ -48,6 +48,7 @@ dev = [
     "mypy>=1",
     "ruff>=0.4",
     "python-dotenv>=1",
+    "pexpect>=4.9",  # E2E CLI testing
 ]
 
 [project.urls]
