@@ -51,10 +51,11 @@ def _sync_chat(state: dict) -> dict:
                     # 检查是否完成
                     if node_state.get("is_complete"):
                         return {"content": "任务完成"}
-        
+
         return {"content": "No response from agent"}
     except Exception as e:
         import traceback
+
         traceback.print_exc()
         return {"content": f"Error: {e}"}
 
