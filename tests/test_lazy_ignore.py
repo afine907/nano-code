@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from nano_code.context.lazy_ignore import LazyIgnoreManager
+from jojo_code.context.lazy_ignore import LazyIgnoreManager
 
 
 class TestLazyIgnoreManager:

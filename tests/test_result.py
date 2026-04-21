@@ -2,8 +2,8 @@
 
 import pytest
 
-from nano_code.core.exceptions import ConfigError
-from nano_code.core.result import Result
+from jojo_code.core.exceptions import ConfigError
+from jojo_code.core.result import Result
 
 
 class TestResult:
