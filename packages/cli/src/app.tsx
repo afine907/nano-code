@@ -53,6 +53,9 @@ export function App() {
       case '/clear':
         clearHistory();
         break;
+      case '/mode':
+        setMode(m => m === 'plan' ? 'build' : 'plan');
+        break;
       case '/exit':
       case '/quit':
         exit();
@@ -95,7 +98,6 @@ export function App() {
         onSubmit={handleSubmit} 
         disabled={isLoading}
         mode={mode}
-        onToggleMode={toggleMode}
       />
       
       {/* 状态栏 */}

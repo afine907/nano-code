@@ -11,70 +11,50 @@ interface InputBoxProps {
 
 export function InputBox({ onSubmit, disabled, mode, onToggleMode }: InputBoxProps) {
   const [input, setInput] = useState('');
-  const [multiline, setMultiline] = useState(false);
   const [lines, setLines] = useState<string[]>([]);
 
   useInput((char, key) => {
     if (disabled) return;
 
-    // Alt+M 切换 Plan/Build 模式
-    if (key.meta && char === 'm') {
-      onToggleMode();
-      return;
-    }
-
-    // Tab 切换多行模式 / 提交
-    if (key.tab) {
-      if (multiline) {
-        // 多行模式下，Tab 完成输入
-        const finalInput = [...lines, input].filter(l => l.trim()).join('\n');
-        if (finalInput.trim()) {
-          onSubmit(finalInput);
-          setInput('');
-          setLines([]);
-          setMultiline(false);
-        }
-      } else {
-        // 单行模式下，Tab 切换到多行模式
-        setMultiline(true);
+    // Enter 提交 (Shift+Enter 换行在 terminal 中很难检测，用 Tab 代替)
+    if (key.return && !key.shift) {
+      // 合并所有行
+      const allLines = [...lines, input].filter(l => l.trim());
+      if (allLines.length > 0) {
+        onSubmit(allLines.join('\n'));
+        setInput('');
+        setLines([]);
       }
       return;
     }
 
-    // Enter
-    if (key.return) {
-      if (multiline) {
-        // 多行模式下，Enter 换行
+    // Shift+Enter 或 Tab 换行
+    if ((key.return && key.shift) || key.tab) {
+      if (input.trim() || lines.length > 0) {
         setLines([...lines, input]);
         setInput('');
-      } else {
-        // 单行模式下，Enter 提交
-        if (input.trim()) {
-          onSubmit(input.trim());
-          setInput('');
-        }
+      }
+      return;
+    }
+
+    // Escape 取消多行输入
+    if (key.escape) {
+      if (lines.length > 0 || input) {
+        setLines([]);
+        setInput('');
       }
       return;
     }
 
     // Backspace
     if (key.backspace || key.delete) {
-      if (input === '' && lines.length > 0 && multiline) {
-        // 删除最后一行
+      if (input === '' && lines.length > 0) {
         const newLines = [...lines];
         setInput(newLines.pop() || '');
         setLines(newLines);
       } else {
         setInput(prev => prev.slice(0, -1));
       }
-      return;
-    }
-
-    // Ctrl+C 取消多行模式
-    if (key.ctrl && char === 'c' && multiline) {
-      setMultiline(false);
-      setLines([]);
-      setInput('');
       return;
     }
 
@@ -85,19 +65,20 @@ export function InputBox({ onSubmit, disabled, mode, onToggleMode }: InputBoxPro
   });
 
   const promptIcon = mode === 'plan' ? '📋' : '🦞';
+  const isMultiline = lines.length > 0;
 
   return (
     <Box flexDirection="column" borderStyle="single" borderColor="gray" paddingX={1}>
-      {/* 多行模式提示 */}
-      {multiline && (
+      {/* 多行提示 */}
+      {isMultiline && (
         <Box>
-          <Text color="yellow" bold>
-            📝 多行模式 (Enter换行, Tab提交, Ctrl+C取消)
+          <Text color="yellow" dimColor>
+            📝 多行输入 (Enter提交, Tab换行, Esc取消)
           </Text>
         </Box>
       )}
       
-      {/* 显示已输入的多行内容 */}
+      {/* 已输入的行 */}
       {lines.length > 0 && (
         <Box flexDirection="column">
           {lines.map((line, i) => (
@@ -106,22 +87,18 @@ export function InputBox({ onSubmit, disabled, mode, onToggleMode }: InputBoxPro
         </Box>
       )}
       
-      {/* 当前输入行 */}
+      {/* 当前行 */}
       <Box>
         <Text bold color="cyan">{promptIcon} </Text>
-        <Text dimColor={multiline ? false : true}>
-          {multiline ? `${lines.length + 1}: ` : ''}
-        </Text>
+        {isMultiline && <Text dimColor>{`${lines.length + 1}: `}</Text>}
         <Text>{input}</Text>
-        {!input && !multiline && (
-          <Text dimColor>(Tab多行, Alt+M切换模式)</Text>
+        {!input && !isMultiline && (
+          <Text dimColor>(Enter提交, Tab换行, /mode 切换模式)</Text>
         )}
         <Text backgroundColor="cyan"> </Text>
       </Box>
       
-      {disabled && (
-        <Text dimColor>处理中...</Text>
-      )}
+      {disabled && <Text dimColor>处理中...</Text>}
     </Box>
   );
 }
