@@ -25,7 +25,6 @@ export interface ToolCall {
 export function App() {
   const { exit } = useApp();
   const [mode, setMode] = useState<Mode>('build');
-  const [inputActive, setInputActive] = useState(true);
   
   const {
     messages,
@@ -50,7 +49,6 @@ export function App() {
     
     switch (command) {
       case '/help':
-        // TODO: show help
         break;
       case '/clear':
         clearHistory();
@@ -64,20 +62,10 @@ export function App() {
     }
   };
 
-  // 全局快捷键 (当输入框不活跃时)
-  useInput((input, key) => {
-    if (inputActive) return; // 输入框活跃时不处理
-    
-    // Ctrl+D 退出
-    if (key.ctrl && input === 'd') {
-      exit();
-    }
-    
-    // F2 切换模式
-    if (key.escape) {
-      setMode(m => m === 'plan' ? 'build' : 'plan');
-    }
-  }, { isActive: !inputActive });
+  // 切换模式
+  const toggleMode = useCallback(() => {
+    setMode(m => m === 'plan' ? 'build' : 'plan');
+  }, []);
 
   return (
     <Box flexDirection="column" height="100%">
@@ -107,6 +95,7 @@ export function App() {
         onSubmit={handleSubmit} 
         disabled={isLoading}
         mode={mode}
+        onToggleMode={toggleMode}
       />
       
       {/* 状态栏 */}
