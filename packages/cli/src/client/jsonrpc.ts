@@ -1,4 +1,5 @@
 import { spawn, ChildProcess } from 'child_process';
+import { existsSync } from 'fs';
 import type { JsonRpcRequest, JsonRpcResponse, StreamChunk } from './types.js';
 
 export class JsonRpcClient {
@@ -17,6 +18,19 @@ export class JsonRpcClient {
     private pythonPath: string = 'python3',
     private serverModule: string = 'jojo_code.server.main'
   ) {
+    // 尝试找到 venv 中的 Python
+    const possiblePaths = [
+      process.cwd() + '/../../.venv/bin/python3',  // packages/cli -> jojo-code/.venv
+      process.cwd() + '/.venv/bin/python3',        // jojo-code/.venv
+      '/home/admin/.openclaw/workspace/jojo-code/.venv/bin/python3',  // 绝对路径
+    ];
+    
+    for (const path of possiblePaths) {
+      if (existsSync(path)) {
+        this.pythonPath = path;
+        break;
+      }
+    }
     this.startServer();
   }
 

@@ -37,10 +37,27 @@ def handle_chat(message: str, stream: bool = False) -> dict | Generator:
 
 def _sync_chat(state: dict) -> dict:
     """同步聊天"""
-    result = None
-    for chunk in _agent.stream(state):
-        result = chunk
-    return {"content": result.get("messages", [])[-1].content if result else ""}
+    try:
+        for chunk in _agent.stream(state):
+            # chunk 格式: {'thinking': {...}} 或 {'execute': {...}}
+            for node_name, node_state in chunk.items():
+                if node_name == "thinking":
+                    messages = node_state.get("messages", [])
+                    if messages:
+                        last_message = messages[-1]
+                        content = last_message.get("content", "")
+                        if content:
+                            return {"content": content}
+                    # 检查是否完成
+                    if node_state.get("is_complete"):
+                        return {"content": "任务完成"}
+
+        return {"content": "No response from agent"}
+    except Exception as e:
+        import traceback
+
+        traceback.print_exc()
+        return {"content": f"Error: {e}"}
 
 
 def _stream_chat(state: dict) -> Generator[dict, None, None]:

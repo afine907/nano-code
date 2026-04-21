@@ -6,6 +6,11 @@ Usage:
 This starts the JSON-RPC server that communicates via stdio.
 """
 
+# 加载 .env 文件（必须在其他导入之前）
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from jojo_code.server.handlers import register_handlers
 from jojo_code.server.jsonrpc import get_server
 

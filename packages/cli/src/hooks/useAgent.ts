@@ -34,6 +34,8 @@ export function useAgent(): UseAgentReturn {
   }, [client]);
 
   const sendMessage = useCallback(async (input: string) => {
+    console.log('[DEBUG] sendMessage called with:', input);
+    
     const userMessage: Message = {
       id: `msg-${Date.now()}`,
       role: 'user',
@@ -41,48 +43,28 @@ export function useAgent(): UseAgentReturn {
       timestamp: new Date(),
     };
 
+    console.log('[DEBUG] Adding user message');
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
     setToolCalls([]);
 
     try {
-      // 流式调用
+      console.log('[DEBUG] Calling client.request');
+      // 使用同步请求（暂时不用流式）
+      const result = await client.request<{ content: string }>('chat', { message: input });
+      console.log('[DEBUG] Got result:', result);
+      
       const assistantMessage: Message = {
         id: `msg-${Date.now() + 1}`,
         role: 'assistant',
-        content: '',
+        content: result?.content || 'No response',
         timestamp: new Date(),
-        toolCalls: [],
       };
 
+      console.log('[DEBUG] Adding assistant message');
       setMessages(prev => [...prev, assistantMessage]);
-
-      for await (const chunk of client.stream('chat', { message: input })) {
-        if (chunk.type === 'content') {
-          assistantMessage.content += chunk.text;
-          setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
-        } else if (chunk.type === 'tool_call') {
-          const tool: ToolCall = {
-            name: chunk.tool_name,
-            args: chunk.args,
-            status: 'running',
-          };
-          assistantMessage.toolCalls = assistantMessage.toolCalls || [];
-          assistantMessage.toolCalls.push(tool);
-          setToolCalls(assistantMessage.toolCalls);
-          setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
-        } else if (chunk.type === 'tool_result') {
-          const lastTool = assistantMessage.toolCalls?.find(
-            t => t.name === chunk.tool_name && t.status === 'running'
-          );
-          if (lastTool) {
-            lastTool.status = 'completed';
-            lastTool.result = chunk.result;
-            setToolCalls([...(assistantMessage.toolCalls || [])]);
-          }
-        }
-      }
     } catch (error) {
+      console.error('[DEBUG] Error:', error);
       const errorMessage: Message = {
         id: `msg-${Date.now() + 2}`,
         role: 'assistant',
@@ -91,6 +73,7 @@ export function useAgent(): UseAgentReturn {
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
+      console.log('[DEBUG] Setting isLoading to false');
       setIsLoading(false);
       setToolCalls([]);
     }

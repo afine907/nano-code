@@ -25,7 +25,6 @@ export interface ToolCall {
 export function App() {
   const { exit } = useApp();
   const [mode, setMode] = useState<Mode>('build');
-  const [showHelp, setShowHelp] = useState(false);
   
   const {
     messages,
@@ -36,19 +35,6 @@ export function App() {
     sendMessage,
     clearHistory,
   } = useAgent();
-
-  // 键盘快捷键
-  useInput((input, key) => {
-    // F2 切换模式
-    if (key.escape && input === '') {
-      setMode(m => m === 'plan' ? 'build' : 'plan');
-    }
-    
-    // Ctrl+D 退出
-    if (key.ctrl && input === 'd') {
-      exit();
-    }
-  });
 
   const handleSubmit = useCallback(async (input: string) => {
     if (input.startsWith('/')) {
@@ -63,20 +49,26 @@ export function App() {
     
     switch (command) {
       case '/help':
-        setShowHelp(true);
         break;
       case '/clear':
         clearHistory();
+        break;
+      case '/mode':
+        setMode(m => m === 'plan' ? 'build' : 'plan');
         break;
       case '/exit':
       case '/quit':
         exit();
         break;
       default:
-        // 未知命令
         break;
     }
   };
+
+  // 切换模式
+  const toggleMode = useCallback(() => {
+    setMode(m => m === 'plan' ? 'build' : 'plan');
+  }, []);
 
   return (
     <Box flexDirection="column" height="100%">
