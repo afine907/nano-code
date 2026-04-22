@@ -2,6 +2,7 @@
 import React from 'react';
 import { render } from 'ink';
 import { App } from './app.js';
+import { ErrorBoundary } from './components/ErrorBoundary.js';
 
 // 检查 TTY 支持
 if (!process.stdin.isTTY) {
@@ -10,10 +11,26 @@ if (!process.stdin.isTTY) {
   process.exit(1);
 }
 
-// 启动 CLI
-const { waitUntilExit } = render(<App />);
+// 确保 stdin 支持必要的方法
+if (typeof process.stdin.setRawMode !== 'function') {
+  console.error('错误: 当前终端不支持 raw mode');
+  console.error('请尝试在不同的终端中运行');
+  process.exit(1);
+}
 
-// 等待退出
-waitUntilExit().then(() => {
-  process.exit(0);
-});
+// 启动 CLI
+try {
+  const { waitUntilExit } = render(
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+
+  // 等待退出
+  waitUntilExit().then(() => {
+    process.exit(0);
+  });
+} catch (error) {
+  console.error('CLI 启动失败:', error instanceof Error ? error.message : error);
+  process.exit(1);
+}

@@ -34,8 +34,6 @@ export function useAgent(): UseAgentReturn {
   }, [client]);
 
   const sendMessage = useCallback(async (input: string) => {
-    console.log('[DEBUG] sendMessage called with:', input);
-    
     const userMessage: Message = {
       id: `msg-${Date.now()}`,
       role: 'user',
@@ -43,16 +41,12 @@ export function useAgent(): UseAgentReturn {
       timestamp: new Date(),
     };
 
-    console.log('[DEBUG] Adding user message');
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
     setToolCalls([]);
 
     try {
-      console.log('[DEBUG] Calling client.request');
-      // 使用同步请求（暂时不用流式）
       const result = await client.request<{ content: string }>('chat', { message: input });
-      console.log('[DEBUG] Got result:', result);
       
       const assistantMessage: Message = {
         id: `msg-${Date.now() + 1}`,
@@ -61,19 +55,16 @@ export function useAgent(): UseAgentReturn {
         timestamp: new Date(),
       };
 
-      console.log('[DEBUG] Adding assistant message');
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('[DEBUG] Error:', error);
       const errorMessage: Message = {
         id: `msg-${Date.now() + 2}`,
         role: 'assistant',
-        content: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        content: `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
-      console.log('[DEBUG] Setting isLoading to false');
       setIsLoading(false);
       setToolCalls([]);
     }
