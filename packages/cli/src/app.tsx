@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { Box, Text, useApp, useInput } from 'ink';
+import { Box, Text, useApp } from 'ink';
 import { ChatView } from './components/ChatView.js';
 import { InputBox } from './components/InputBox.js';
-import { StatusBar } from './components/StatusBar.js';
 import { useAgent } from './hooks/useAgent.js';
 
 export type Mode = 'plan' | 'build';
@@ -31,7 +30,6 @@ export function App() {
     isLoading,
     model,
     toolCalls,
-    sessionStats,
     sendMessage,
     clearHistory,
   } = useAgent();
@@ -45,50 +43,53 @@ export function App() {
   }, [sendMessage]);
 
   const handleCommand = (cmd: string) => {
-    const command = cmd.trim().toLowerCase();
+    const parts = cmd.trim().split(/\s+/);
+    const command = parts[0].toLowerCase();
     
     switch (command) {
       case '/help':
+        console.log(`
+可用命令:
+  /mode [plan|build]  - 切换模式 (默认: build)
+  /clear              - 清空对话
+  /exit, /quit        - 退出
+        `);
         break;
       case '/clear':
         clearHistory();
         break;
       case '/mode':
-        setMode(m => m === 'plan' ? 'build' : 'plan');
+        if (parts[1]) {
+          setMode(parts[1] === 'plan' ? 'plan' : 'build');
+        } else {
+          setMode(m => m === 'plan' ? 'build' : 'plan');
+        }
         break;
       case '/exit':
       case '/quit':
         exit();
         break;
       default:
-        break;
+        console.log(`未知命令: ${command}`);
     }
   };
 
-  // 切换模式
   const toggleMode = useCallback(() => {
     setMode(m => m === 'plan' ? 'build' : 'plan');
   }, []);
 
   return (
-    <Box flexDirection="column" height="100%">
-      {/* 欢迎信息 */}
-      <Box borderStyle="round" borderColor="blue" paddingX={1}>
-        <Text bold color="blue">
-          🤖 jojo-Code - 编码助手
-        </Text>
-      </Box>
-      
-      {/* 主聊天区域 */}
+    <Box flexDirection="column" minHeight={20}>
+      {/* 聊天区域 */}
       <Box flexGrow={1} flexDirection="column">
         <ChatView messages={messages} isLoading={isLoading} />
       </Box>
       
-      {/* 工具执行状态 */}
+      {/* 工具执行状态 - 简洁版 */}
       {toolCalls.length > 0 && (
-        <Box borderStyle="single" borderColor="yellow" paddingX={1}>
-          <Text color="yellow">
-            ⚡ 执行工具: {toolCalls.map(t => t.name).join(', ')}
+        <Box paddingX={1}>
+          <Text dimColor>
+            ⏳ {toolCalls.map(t => t.name).join(', ')}
           </Text>
         </Box>
       )}
@@ -98,15 +99,8 @@ export function App() {
         onSubmit={handleSubmit} 
         disabled={isLoading}
         mode={mode}
-      />
-      
-      {/* 状态栏 */}
-      <StatusBar
-        mode={mode}
+        onToggleMode={toggleMode}
         model={model}
-        messages={messages.length}
-        tools={toolCalls.length}
-        duration={sessionStats.duration}
       />
     </Box>
   );

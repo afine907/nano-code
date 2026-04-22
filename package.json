@@ -1,0 +1,17 @@
+{
+  "name": "jojo-code-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "jojo-code - TypeScript CLI + Python LangGraph Core",
+  "scripts": {
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "build": "pnpm -r build"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

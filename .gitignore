@@ -41,4 +41,3 @@ Thumbs.db
 # Node.js
 node_modules/
 packages/*/node_modules/
-pnpm-lock.yaml

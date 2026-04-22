@@ -10,9 +10,9 @@ interface ChatViewProps {
 export function ChatView({ messages, isLoading }: ChatViewProps) {
   if (messages.length === 0 && !isLoading) {
     return (
-      <Box flexDirection="column" padding={1}>
+      <Box paddingX={1} paddingY={1}>
         <Text dimColor>
-          输入你的问题，/help 查看命令，Ctrl+D 退出
+          输入问题开始对话，/help 查看命令
         </Text>
       </Box>
     );
@@ -24,8 +24,8 @@ export function ChatView({ messages, isLoading }: ChatViewProps) {
         <MessageItem key={msg.id} message={msg} />
       ))}
       {isLoading && (
-        <Box>
-          <Text color="cyan">⠋ AI 思考中...</Text>
+        <Box paddingY={1}>
+          <Text dimColor>  ○</Text>
         </Box>
       )}
     </Box>
@@ -35,18 +35,21 @@ export function ChatView({ messages, isLoading }: ChatViewProps) {
 function MessageItem({ message }: { message: Message }) {
   const isUser = message.role === 'user';
   
+  // 用户消息 - 简洁显示
+  if (isUser) {
+    return (
+      <Box flexDirection="column" marginBottom={1}>
+        <Text color="cyan">{message.content}</Text>
+      </Box>
+    );
+  }
+  
+  // 助手消息
   return (
-    <Box flexDirection="column" marginY={1}>
-      <Box>
-        <Text bold color={isUser ? 'green' : 'blue'}>
-          {isUser ? '👤 You: ' : '🤖 AI: '}
-        </Text>
-      </Box>
-      <Box paddingLeft={2}>
-        <Text>{message.content}</Text>
-      </Box>
+    <Box flexDirection="column" marginBottom={1}>
+      <Text>{message.content}</Text>
       {message.toolCalls && message.toolCalls.length > 0 && (
-        <Box paddingLeft={2} flexDirection="column">
+        <Box paddingLeft={1} marginTop={0}>
           {message.toolCalls.map((tool, i) => (
             <ToolCallItem key={i} tool={tool} />
           ))}
@@ -58,10 +61,10 @@ function MessageItem({ message }: { message: Message }) {
 
 function ToolCallItem({ tool }: { tool: ToolCall }) {
   const statusIcon = {
-    pending: '⏳',
-    running: '⚡',
-    completed: '✅',
-    error: '❌',
+    pending: '○',
+    running: '◐',
+    completed: '●',
+    error: '✗',
   }[tool.status];
 
   return (

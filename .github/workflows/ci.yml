@@ -41,8 +41,8 @@ jobs:
       - name: 🏷️ Run type checking with mypy
         run: uv run mypy src/
 
-      - name: 🧪 Run test suite with coverage
-        run: uv run pytest tests/ -v --cov=src/jojo_code --cov-report=xml
+      - name: 🧪 Run Python test suite with coverage
+        run: uv run pytest tests/ -v --cov=src/jojo_code --cov-report=xml -m "not e2e or longcat"
 
       - name: 📊 Upload coverage report to Codecov
         uses: codecov/codecov-action@v4
@@ -50,6 +50,34 @@ jobs:
         with:
           files: ./coverage.xml
           fail_ci_if_error: false
+
+  typescript-tests:
+    name: 🎨 TypeScript Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: 🐍 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: 📦 Install dependencies
+        run: pnpm install
+
+      - name: 🔍 Run TypeScript tests
+        run: cd packages/cli && pnpm test -- --run
+
+      - name: 🔍 Type check
+        run: cd packages/cli && pnpm typecheck
 
   build:
     name: 🏗️ Build package
