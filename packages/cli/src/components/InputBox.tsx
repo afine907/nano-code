@@ -14,6 +14,8 @@ export function InputBox({ onSubmit, disabled, mode, onToggleMode, model }: Inpu
   const { exit } = useApp();
   const [input, setInput] = useState('');
   const [lines, setLines] = useState<string[]>([]);
+  
+  const isRawModeSupported = Boolean(process.stdin.isTTY);
 
   useInput((char, key) => {
     if (disabled) return;
@@ -67,7 +69,7 @@ export function InputBox({ onSubmit, disabled, mode, onToggleMode, model }: Inpu
     if (char && !key.ctrl && !key.meta) {
       setInput(prev => prev + char);
     }
-  });
+  }, { isActive: isRawModeSupported });
 
   const modeIcon = mode === 'plan' ? '📋' : '🦞';
   const isMultiline = lines.length > 0;

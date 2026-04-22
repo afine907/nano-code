@@ -18,6 +18,13 @@ if (typeof process.stdin.setRawMode !== 'function') {
   process.exit(1);
 }
 
+// 检查 TTY 支持
+if (!process.stdin.isTTY) {
+  console.error('错误: 此 CLI 需要在终端 (TTY) 环境中运行');
+  console.error('请在终端中运行此命令，而不是通过管道或脚本');
+  process.exit(1);
+}
+
 // 启动 CLI
 try {
   const { waitUntilExit } = render(
