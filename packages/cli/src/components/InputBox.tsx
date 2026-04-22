@@ -14,12 +14,11 @@ export function InputBox({ onSubmit, disabled, mode, onToggleMode, model }: Inpu
   const { exit } = useApp();
   const [input, setInput] = useState('');
   const [lines, setLines] = useState<string[]>([]);
-  
-  const isRawModeSupported = Boolean(process.stdin.isTTY);
 
   useInput((char, key) => {
     if (disabled) return;
 
+    // Ctrl+C 退出
     if (key.ctrl && char === 'c') {
       exit();
       return;
@@ -64,11 +63,11 @@ export function InputBox({ onSubmit, disabled, mode, onToggleMode, model }: Inpu
       return;
     }
 
-    // 普通字符
+    // 普通字符输入
     if (char && !key.ctrl && !key.meta) {
       setInput(prev => prev + char);
     }
-  }, { isActive: isRawModeSupported });
+  });
 
   const modeIcon = mode === 'plan' ? '📋' : '🦞';
   const isMultiline = lines.length > 0;
