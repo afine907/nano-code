@@ -21,9 +21,19 @@ Usage:
 from .collector import Collector
 from .config import OpsConfig
 from .dashboard import Dashboard
+from .evaluator import (
+    BaseEvaluator,
+    CompositeEvaluator,
+    EvaluationResult,
+    EvaluationScore,
+    PerformanceEvaluator,
+    PlanningEvaluator,
+    TestCaseEvaluator,
+)
 from .exporter import Exporter
 from .metrics import MetricsEngine, MetricsSummary, TraceMetrics
 from .models import Span, SpanStatus, SpanType, Trace
+from .report import ReportGenerator
 
 __all__ = [
     # 数据模型
@@ -43,4 +53,14 @@ __all__ = [
     "Exporter",
     # 面板
     "Dashboard",
+    # 评估器
+    "BaseEvaluator",
+    "PlanningEvaluator",
+    "TestCaseEvaluator",
+    "PerformanceEvaluator",
+    "CompositeEvaluator",
+    "EvaluationResult",
+    "EvaluationScore",
+    # 报告
+    "ReportGenerator",
 ]
