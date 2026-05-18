@@ -515,7 +515,7 @@ class SkillTool(BaseTool):
          ├── 内置 Skills
          └── 动态加载
 
-  [T3-3] 会话记忆 (SessionMemory)           3天    -       ⬜
+  [T3-3] 会话记忆 (SessionMemory)           3天    -       ✅
          ├── 短期记忆 (当前会话)
          ├── 长期记忆 (持久化)
          └── 记忆检索
