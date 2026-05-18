@@ -120,8 +120,19 @@ def thinking_node(state: AgentState) -> dict[str, Any]:
     # 判断是否完成
     is_complete = len(tool_calls) == 0
 
-    # 添加助手消息到历史
+    # 添加助手消息到历史（保留之前的消息）
+    # 获取之前的消息并添加新的助手消息
+    existing_messages = state.get("messages", [])
     new_messages: list[dict[str, Any]] = []
+
+    # 保留之前非空的消息
+    for msg in existing_messages:
+        if isinstance(msg, dict) and msg.get("content"):
+            new_messages.append(msg)
+        elif hasattr(msg, "content") and msg.content:  # 消息对象
+            new_messages.append({"role": "assistant", "content": msg.content})
+
+    # 添加当前轮的助手消息
     if response.content:
         content = response.content if isinstance(response.content, str) else str(response.content)
         new_messages.append({"role": "assistant", "content": content})
