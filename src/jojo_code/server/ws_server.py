@@ -167,7 +167,10 @@ async def _sync_chat(agent, state: dict, ws: WebSocket, req_id: str | int | None
 
     except Exception as e:
         logger.error(f"Chat error: {e}\n{traceback.format_exc()}")
-        await _send_response(ws, req_id, {"content": f"Error: {e}"})
+        try:
+            await _send_response(ws, req_id, {"content": f"Error: {e}"})
+        except Exception:
+            pass  # 客户端可能已断开
 
 
 async def _stream_chat(agent, state: dict, ws: WebSocket, req_id: str | int | None) -> None:
@@ -270,8 +273,11 @@ def _parse_stream_event(event: dict) -> list[dict]:
 
 async def _send_response(ws: WebSocket, req_id: str | int | None, result: Any) -> None:
     """发送 JSON-RPC 响应"""
-    response = JsonRpcResponse(id=req_id, result=result)
-    await ws.send_text(json.dumps(response.to_dict(), ensure_ascii=False))
+    try:
+        response = JsonRpcResponse(id=req_id, result=result)
+        await ws.send_text(json.dumps(response.to_dict(), ensure_ascii=False))
+    except Exception as e:
+        logger.warning(f"Failed to send response: {e}")
 
 
 async def handle_clear_ws(params: dict, ws: WebSocket, req_id: str | int | None) -> None:
