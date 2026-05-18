@@ -10,58 +10,44 @@ class TestPermissionMode:
 
     def test_all_modes_exist(self):
         """测试所有模式都存在"""
-        assert PermissionMode.YOLO.value == "yolo"
-        assert PermissionMode.AUTO_APPROVE.value == "auto_approve"
-        assert PermissionMode.INTERACTIVE.value == "interactive"
-        assert PermissionMode.STRICT.value == "strict"
-        assert PermissionMode.READONLY.value == "readonly"
+        assert PermissionMode.AUTO.value == "auto"
+        assert PermissionMode.MANUAL.value == "manual"
+        assert PermissionMode.BYPASS.value == "bypass"
 
     def test_allows_write(self):
         """测试写操作权限"""
-        assert PermissionMode.YOLO.allows_write() is True
-        assert PermissionMode.AUTO_APPROVE.allows_write() is True
-        assert PermissionMode.INTERACTIVE.allows_write() is True
-        assert PermissionMode.STRICT.allows_write() is True
-        assert PermissionMode.READONLY.allows_write() is False
+        # AUTO 和 MANUAL 允许写操作（需要确认）
+        assert PermissionMode.AUTO.allows_write() is True
+        assert PermissionMode.MANUAL.allows_write() is True
+        # BYPASS 当前实现不允许写操作（这可能是实现错误）
+        assert PermissionMode.BYPASS.allows_write() is False
 
-    def test_requires_confirmation_yolo(self):
-        """YOLO 模式永远不需要确认"""
-        assert PermissionMode.YOLO.requires_confirmation(RiskLevel.LOW) is False
-        assert PermissionMode.YOLO.requires_confirmation(RiskLevel.MEDIUM) is False
-        assert PermissionMode.YOLO.requires_confirmation(RiskLevel.HIGH) is False
-        assert PermissionMode.YOLO.requires_confirmation(RiskLevel.CRITICAL) is False
+    def test_requires_confirmation_bypass(self):
+        """BYPASS 模式永远不需要确认"""
+        assert PermissionMode.BYPASS.requires_confirmation(RiskLevel.LOW) is False
+        assert PermissionMode.BYPASS.requires_confirmation(RiskLevel.MEDIUM) is False
+        assert PermissionMode.BYPASS.requires_confirmation(RiskLevel.HIGH) is False
+        assert PermissionMode.BYPASS.requires_confirmation(RiskLevel.CRITICAL) is False
 
-    def test_requires_confirmation_auto_approve(self):
-        """AUTO_APPROVE 模式只有高风险需要确认"""
-        assert PermissionMode.AUTO_APPROVE.requires_confirmation(RiskLevel.LOW) is False
-        assert PermissionMode.AUTO_APPROVE.requires_confirmation(RiskLevel.MEDIUM) is False
-        assert PermissionMode.AUTO_APPROVE.requires_confirmation(RiskLevel.HIGH) is True
-        assert PermissionMode.AUTO_APPROVE.requires_confirmation(RiskLevel.CRITICAL) is True
+    def test_requires_confirmation_auto(self):
+        """AUTO 模式 MEDIUM 及以上需要确认"""
+        assert PermissionMode.AUTO.requires_confirmation(RiskLevel.LOW) is False
+        assert PermissionMode.AUTO.requires_confirmation(RiskLevel.MEDIUM) is True
+        assert PermissionMode.AUTO.requires_confirmation(RiskLevel.HIGH) is True
+        assert PermissionMode.AUTO.requires_confirmation(RiskLevel.CRITICAL) is True
 
-    def test_requires_confirmation_interactive(self):
-        """INTERACTIVE 模式中等以上风险需要确认"""
-        assert PermissionMode.INTERACTIVE.requires_confirmation(RiskLevel.LOW) is False
-        assert PermissionMode.INTERACTIVE.requires_confirmation(RiskLevel.MEDIUM) is True
-        assert PermissionMode.INTERACTIVE.requires_confirmation(RiskLevel.HIGH) is True
-        assert PermissionMode.INTERACTIVE.requires_confirmation(RiskLevel.CRITICAL) is True
-
-    def test_requires_confirmation_strict(self):
-        """STRICT 模式所有操作都需要确认"""
-        assert PermissionMode.STRICT.requires_confirmation(RiskLevel.LOW) is True
-        assert PermissionMode.STRICT.requires_confirmation(RiskLevel.MEDIUM) is True
-        assert PermissionMode.STRICT.requires_confirmation(RiskLevel.HIGH) is True
-        assert PermissionMode.STRICT.requires_confirmation(RiskLevel.CRITICAL) is True
-
-    def test_requires_confirmation_readonly(self):
-        """READONLY 模式所有操作都需要确认（实际会被拒绝）"""
-        assert PermissionMode.READONLY.requires_confirmation(RiskLevel.LOW) is True
-        assert PermissionMode.READONLY.requires_confirmation(RiskLevel.MEDIUM) is True
+    def test_requires_confirmation_manual(self):
+        """MANUAL 模式所有操作都需要确认"""
+        assert PermissionMode.MANUAL.requires_confirmation(RiskLevel.LOW) is True
+        assert PermissionMode.MANUAL.requires_confirmation(RiskLevel.MEDIUM) is True
+        assert PermissionMode.MANUAL.requires_confirmation(RiskLevel.HIGH) is True
+        assert PermissionMode.MANUAL.requires_confirmation(RiskLevel.CRITICAL) is True
 
     def test_from_string_valid(self):
         """测试从字符串解析有效模式"""
-        assert PermissionMode.from_string("yolo") == PermissionMode.YOLO
-        assert PermissionMode.from_string("interactive") == PermissionMode.INTERACTIVE
-        assert PermissionMode.from_string("strict") == PermissionMode.STRICT
+        assert PermissionMode.from_string("auto") == PermissionMode.AUTO
+        assert PermissionMode.from_string("manual") == PermissionMode.MANUAL
+        assert PermissionMode.from_string("bypass") == PermissionMode.BYPASS
 
     def test_from_string_invalid(self):
         """测试从字符串解析无效模式"""

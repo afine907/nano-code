@@ -44,7 +44,7 @@ class PermissionConfig:
     audit_log_path: Path = field(default_factory=lambda: Path(".jojo-code/audit.log"))
 
     # 权限模式
-    mode: str = "interactive"  # yolo | auto_approve | interactive | strict | readonly
+    mode: str = "auto"  # auto | manual | bypass (与 Claude Code 一致)
 
     def __post_init__(self) -> None:
         """确保路径是 Path 对象"""
@@ -207,8 +207,8 @@ class PermissionManager:
         Returns:
             权限检查结果
         """
-        # 1. YOLO 模式直接放行
-        if self._mode == PermissionMode.YOLO:
+        # 1. BYPASS 模式直接放行
+        if self._mode == PermissionMode.BYPASS:
             return PermissionResult(PermissionLevel.ALLOW, tool_name, args)
 
         # 2. 检查调用次数限制
@@ -223,14 +223,14 @@ class PermissionManager:
         # 3. 评估风险等级
         risk = assess_risk(tool_name, args)
 
-        # 4. ReadOnly 模式检查
-        if self._mode == PermissionMode.READONLY:
+        # 4. MANUAL 模式检查 (所有写操作需要确认)
+        if self._mode == PermissionMode.MANUAL:
             if risk in ("medium", "high", "critical"):
                 return PermissionResult(
                     PermissionLevel.DENY,
                     tool_name,
                     args,
-                    reason=f"ReadOnly 模式拒绝 {risk} 风险操作",
+                    reason=f"Manual 模式拒绝 {risk} 风险操作",
                 )
 
         # 5. 运行守卫检查
@@ -255,33 +255,23 @@ class PermissionManager:
         if final_result.level == PermissionLevel.ALLOW:
             risk_level = RiskLevel.from_string(risk)
 
-            # Strict 模式: 所有操作都需确认
-            if self._mode == PermissionMode.STRICT:
+            # MANUAL 模式: 所有操作都需确认
+            if self._mode == PermissionMode.MANUAL:
                 return PermissionResult(
                     PermissionLevel.CONFIRM,
                     tool_name,
                     args,
-                    reason=f"Strict 模式需要确认所有操作 (风险: {risk})",
+                    reason=f"Manual 模式需要确认所有操作 (风险: {risk})",
                 )
 
-            # Interactive 模式: 中高风险需确认
-            if self._mode == PermissionMode.INTERACTIVE:
+            # AUTO 模式: 中高风险需确认 (MEDIUM+)
+            if self._mode == PermissionMode.AUTO:
                 if risk_level >= RiskLevel.MEDIUM:
                     return PermissionResult(
                         PermissionLevel.CONFIRM,
                         tool_name,
                         args,
                         reason=f"操作需要确认 (风险: {risk})",
-                    )
-
-            # Auto-Approve 模式: 高风险需确认
-            if self._mode == PermissionMode.AUTO_APPROVE:
-                if risk_level >= RiskLevel.HIGH:
-                    return PermissionResult(
-                        PermissionLevel.CONFIRM,
-                        tool_name,
-                        args,
-                        reason=f"高风险操作需要确认 (风险: {risk})",
                     )
 
         self._call_count += 1

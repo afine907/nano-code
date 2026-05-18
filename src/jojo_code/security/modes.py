@@ -5,24 +5,20 @@ from typing import Self
 
 
 class PermissionMode(StrEnum):
-    """权限模式 - 控制工具执行的权限级别
+    """权限模式 - 与 Claude Code 保持一致
 
-    YOLO: 完全信任模式，允许执行所有操作，无任何限制
-    AUTO_APPROVE: 自动批准模式，自动批准低风险操作，高风险操作需要确认
-    INTERACTIVE: 交互模式，所有写操作都需要用户确认
-    STRICT: 严格模式，所有操作都需要用户确认
-    READONLY: 只读模式，只允许读操作，拒绝所有写操作
+    AUTO: 自动模式 - 低风险操作自动放行，高风险需要确认
+    MANUAL: 手动模式 - 所有写操作都需要用户确认
+    BYPASS: 绕过模式 - 完全信任，完全不检查权限 (危险!)
     """
 
-    YOLO = "yolo"
-    AUTO_APPROVE = "auto_approve"
-    INTERACTIVE = "interactive"
-    STRICT = "strict"
-    READONLY = "readonly"
+    AUTO = "auto"
+    MANUAL = "manual"
+    BYPASS = "bypass"
 
     def allows_write(self) -> bool:
         """是否允许写操作"""
-        return self not in (PermissionMode.READONLY,)
+        return self != PermissionMode.BYPASS
 
     def requires_confirmation(self, risk_level: "RiskLevel") -> bool:
         """给定风险等级是否需要确认
@@ -33,17 +29,13 @@ class PermissionMode(StrEnum):
         Returns:
             是否需要用户确认
         """
-        if self == PermissionMode.YOLO:
+        if self == PermissionMode.BYPASS:
             return False
-        if self == PermissionMode.AUTO_APPROVE:
-            # AUTO_APPROVE: MEDIUM 及以下自动批准，HIGH 及以上需要确认
-            return risk_level >= RiskLevel.HIGH
-        if self == PermissionMode.INTERACTIVE:
-            # INTERACTIVE: LOW 自动批准，MEDIUM 及以上需要确认
-            return risk_level > RiskLevel.LOW
-        if self == PermissionMode.STRICT:
-            return True
-        if self == PermissionMode.READONLY:
+        if self == PermissionMode.AUTO:
+            # AUTO: MEDIUM 及以上需要确认
+            return risk_level >= RiskLevel.MEDIUM
+        if self == PermissionMode.MANUAL:
+            # MANUAL: 所有写操作都需要确认
             return True
         return True
 

@@ -18,7 +18,9 @@ class TestJojoCodeError:
         error = JojoCodeError("发生错误")
         assert error.message == "发生错误"
         assert error.hint is None
-        assert str(error) == "发生错误"
+        # 字符串表示包含错误码
+        assert "[9001]" in str(error)
+        assert "发生错误" in str(error)
 
     def test_error_with_hint(self):
         """测试带提示的错误"""

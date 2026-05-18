@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# ruff: noqa: E402
 from jojo_code.server.handlers import register_handlers
 from jojo_code.server.jsonrpc import get_server
 
