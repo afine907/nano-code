@@ -4,22 +4,24 @@ import fnmatch
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 
 class RuleAction(Enum):
     """规则动作"""
-    ALLOW = "allow"      # 允许
-    DENY = "deny"        # 拒绝
-    ASK = "ask"          # 询问用户
+
+    ALLOW = "allow"  # 允许
+    DENY = "deny"  # 拒绝
+    ASK = "ask"  # 询问用户
 
 
 class RuleMatchType(Enum):
     """规则匹配类型"""
-    EXACT = "exact"          # 精确匹配
-    GLOB = "glob"            # 通配符匹配 (fnmatch)
-    REGEX = "regex"          # 正则匹配
-    PREFIX = "prefix"        # 前缀匹配
+
+    EXACT = "exact"  # 精确匹配
+    GLOB = "glob"  # 通配符匹配 (fnmatch)
+    REGEX = "regex"  # 正则匹配
+    PREFIX = "prefix"  # 前缀匹配
 
 
 @dataclass
@@ -110,7 +112,8 @@ class PermissionRule:
         return self.matches_tool(tool_name) and self.matches_args(args)
 
     def __repr__(self) -> str:
-        return f"PermissionRule({self.name or self.tool_pattern}, action={self.action.value}, priority={self.priority})"
+        name = self.name or self.tool_pattern
+        return f"PermissionRule({name}, action={self.action.value}, priority={self.priority})"
 
 
 class RuleEngine:
@@ -252,7 +255,7 @@ class RuleFactory:
             tool_pattern="*",
             action=RuleAction.ALLOW,
             priority=0,
-            description="允许所有工具执行"
+            description="允许所有工具执行",
         )
 
     @staticmethod
@@ -265,7 +268,7 @@ class RuleFactory:
                 args_pattern={"command": "rm -rf *"},
                 action=RuleAction.DENY,
                 priority=100,
-                description="禁止 rm -rf 命令"
+                description="禁止 rm -rf 命令",
             ),
             PermissionRule(
                 name="deny_sudo",
@@ -273,7 +276,7 @@ class RuleFactory:
                 args_pattern={"command": "sudo *"},
                 action=RuleAction.DENY,
                 priority=100,
-                description="禁止 sudo 命令"
+                description="禁止 sudo 命令",
             ),
             PermissionRule(
                 name="deny_chmod_777",
@@ -281,7 +284,7 @@ class RuleFactory:
                 args_pattern={"command": "chmod 777 *"},
                 action=RuleAction.DENY,
                 priority=100,
-                description="禁止 chmod 777"
+                description="禁止 chmod 777",
             ),
         ]
 
@@ -291,13 +294,15 @@ class RuleFactory:
         write_tools = ["write_file", "edit_file", "run_command", "delete_file"]
         rules = []
         for tool in write_tools:
-            rules.append(PermissionRule(
-                name=f"ask_{tool}",
-                tool_pattern=tool,
-                action=RuleAction.ASK,
-                priority=50,
-                description=f"执行 {tool} 需要确认"
-            ))
+            rules.append(
+                PermissionRule(
+                    name=f"ask_{tool}",
+                    tool_pattern=tool,
+                    action=RuleAction.ASK,
+                    priority=50,
+                    description=f"执行 {tool} 需要确认",
+                )
+            )
         return rules
 
 

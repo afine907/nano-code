@@ -1,11 +1,12 @@
 """增强版权限管理器 - 集成规则引擎和拒绝追踪"""
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 from jojo_code.security.denial import AdaptivePermissionMixin, DenialTracker
-from jojo_code.security.manager import PermissionManager as BasePermissionManager
 from jojo_code.security.manager import PermissionConfig
+from jojo_code.security.manager import PermissionManager as BasePermissionManager
 from jojo_code.security.modes import PermissionMode
 from jojo_code.security.permission import PermissionLevel, PermissionResult
 from jojo_code.security.rule import (
@@ -13,7 +14,6 @@ from jojo_code.security.rule import (
     RuleEngine,
     RuleFactory,
 )
-
 
 # 用户确认回调类型
 ConfirmCallback = Callable[[PermissionResult], bool]
@@ -32,8 +32,8 @@ class EnhancedPermissionConfig:
 
     # 拒绝追踪配置
     enable_denial_tracking: bool = True
-    denial_threshold: int = 3          # 超过此次数认为是重复请求
-    denial_window_seconds: int = 300   # 时间窗口
+    denial_threshold: int = 3  # 超过此次数认为是重复请求
+    denial_window_seconds: int = 300  # 时间窗口
 
     # 用户确认回调
     confirm_callback: ConfirmCallback | None = None
@@ -59,9 +59,7 @@ class EnhancedPermissionManager(AdaptivePermissionMixin):
         # 规则引擎
         if self.config.enable_rule_engine:
             self._rule_engine = RuleEngine()
-            self._rule_engine.default_action = RuleAction(
-                self.config.default_rule_action
-            )
+            self._rule_engine.default_action = RuleAction(self.config.default_rule_action)
             self._init_default_rules()
         else:
             self._rule_engine = None

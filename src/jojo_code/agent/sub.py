@@ -2,29 +2,29 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any
 
-from jojo_code.task import Task, TaskType, TaskInput, TaskResult, generate_task_id
+from jojo_code.task import TaskType, generate_task_id
 
 
 @dataclass
 class AgentConfig:
     """子 Agent 配置"""
 
-    name: str                      # Agent 名称
-    description: str = ""          # Agent 描述
+    name: str  # Agent 名称
+    description: str = ""  # Agent 描述
     model: str = "claude-sonnet-4-20250514"  # 使用的模型
-    max_iterations: int = 50       # 最大迭代次数
-    timeout: float = 300.0         # 超时时间 (秒)
+    max_iterations: int = 50  # 最大迭代次数
+    timeout: float = 300.0  # 超时时间 (秒)
     tools: list[str] = field(default_factory=list)  # 可用工具
-    system_prompt: str = ""        # 系统提示词
+    system_prompt: str = ""  # 系统提示词
 
 
 @dataclass
 class AgentRequest:
     """Agent 请求"""
 
-    task: str                      # 任务描述
+    task: str  # 任务描述
     context: dict[str, Any] = field(default_factory=dict)  # 上下文
     parent_task_id: str | None = None  # 父任务 ID
 
@@ -44,7 +44,7 @@ class AgentResponse:
 class SubAgent:
     """子 Agent
 
-    可以被工具调用，创建独立的 Agent 执行任务。
+    可以被工具调用,创建独立的 Agent 执行任务。
     支持并行执行、状态共享。
     """
 
@@ -81,6 +81,7 @@ class SubAgent:
         try:
             # 初始化 LLM
             from jojo_code.core.llm import get_llm
+
             llm = get_llm()
 
             # 构建消息
@@ -102,17 +103,21 @@ class SubAgent:
                     # 执行工具
                     for tool_call in response.tool_calls:
                         result = self._execute_tool(tool_call)
-                        messages.append({
-                            "role": "assistant",
-                            "content": response.content,
-                        })
-                        messages.append({
-                            "role": "tool",
-                            "tool_call_id": tool_call.id,
-                            "content": str(result),
-                        })
+                        messages.append(
+                            {
+                                "role": "assistant",
+                                "content": response.content,
+                            }
+                        )
+                        messages.append(
+                            {
+                                "role": "tool",
+                                "tool_call_id": tool_call.id,
+                                "content": str(result),
+                            }
+                        )
                 else:
-                    # 完成，返回结果
+                    # 完成,返回结果
                     self._status = "completed"
                     duration = (datetime.now() - start_time).total_seconds()
                     return AgentResponse(
@@ -147,8 +152,9 @@ class SubAgent:
         Returns:
             Agent 响应
         """
-        # 简化版本，实际可以用 asyncio.to_thread
+        # 简化版本,实际可以用 asyncio.to_thread
         import asyncio
+
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self.run, request)
 
@@ -163,7 +169,6 @@ class SubAgent:
         """
         # TODO: 实现工具执行
         tool_name = tool_call.get("name", "")
-        args = tool_call.get("args", {})
 
         # 这里应该调用 ToolRegistry
         return {"tool": tool_name, "result": "not implemented"}

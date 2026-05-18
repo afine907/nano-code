@@ -1,20 +1,16 @@
 """任务执行器 - 任务执行逻辑"""
 
 import asyncio
-from concurrent.futures import ThreadPoolExecutor, Future
-from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any, Callable
+from collections.abc import Callable
+from concurrent.futures import Future, ThreadPoolExecutor
+from dataclasses import dataclass
 
-from jojo_code.task.id import generate_task_id
 from jojo_code.task.types import (
     Task,
     TaskInput,
-    TaskOutput,
     TaskResult,
     TaskStatus,
     TaskType,
-    TaskPriority,
 )
 
 
@@ -22,10 +18,10 @@ from jojo_code.task.types import (
 class TaskExecutorConfig:
     """任务执行器配置"""
 
-    max_concurrent: int = 5          # 最大并发任务数
-    max_retries: int = 3             # 最大重试次数
-    retry_delay: float = 1.0         # 重试延迟 (秒)
-    timeout: float | None = None     # 任务超时 (秒)
+    max_concurrent: int = 5  # 最大并发任务数
+    max_retries: int = 3  # 最大重试次数
+    retry_delay: float = 1.0  # 重试延迟 (秒)
+    timeout: float | None = None  # 任务超时 (秒)
     output_dir: str = ".jojo-code/output"  # 输出目录
 
 
@@ -93,7 +89,6 @@ class TaskExecutor:
 
         # 标记开始
         task.start()
-        start_time = datetime.now()
 
         try:
             # 执行任务
@@ -153,12 +148,13 @@ class TaskExecutor:
                     result = self.execute(task)
                     if result.success:
                         return result
-                except Exception as e:
+                except Exception:
                     pass
 
                 attempts += 1
                 if attempts < max_retries:
                     import time
+
                     time.sleep(self.config.retry_delay * attempts)
 
             return TaskResult(success=False, error="重试次数耗尽")

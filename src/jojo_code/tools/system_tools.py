@@ -92,13 +92,15 @@ def process_list(pattern: str = "", limit: int = 10) -> list[dict[str, Any]]:
                 info = p.info
                 if pattern and pattern.lower() not in info["name"].lower():
                     continue
-                processes.append({
-                    "pid": info["pid"],
-                    "name": info["name"],
-                    "cpu": info.get("cpu_percent", 0),
-                    "memory": round(info.get("memory_percent", 0), 1),
-                })
-            except:
+                processes.append(
+                    {
+                        "pid": info["pid"],
+                        "name": info["name"],
+                        "cpu": info.get("cpu_percent", 0),
+                        "memory": round(info.get("memory_percent", 0), 1),
+                    }
+                )
+            except (KeyError, TypeError, AttributeError):
                 pass
 
         # 按 CPU 排序

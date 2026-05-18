@@ -4,7 +4,9 @@ import asyncio
 import json
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any
+
+import aiohttp
 
 from jojo_code.core.exceptions import NetworkError
 
@@ -13,20 +15,20 @@ from jojo_code.core.exceptions import NetworkError
 class MCPConfig:
     """MCP 服务器配置"""
 
-    name: str                      # 服务器名称
-    url: str                       # 服务器 URL
-    transport: str = "stdio"       # 传输方式: stdio/http/sse
+    name: str  # 服务器名称
+    url: str  # 服务器 URL
+    transport: str = "stdio"  # 传输方式: stdio/http/sse
     auth: dict[str, str] = field(default_factory=dict)  # 认证信息
-    timeout: float = 30.0          # 超时时间
-    retry: int = 3                 # 重试次数
+    timeout: float = 30.0  # 超时时间
+    retry: int = 3  # 重试次数
 
 
 @dataclass
 class MCPTool:
     """MCP 工具"""
 
-    name: str                      # 工具名称
-    description: str = ""          # 工具描述
+    name: str  # 工具名称
+    description: str = ""  # 工具描述
     input_schema: dict[str, Any] = field(default_factory=dict)  # 输入 schema
 
 
@@ -34,9 +36,9 @@ class MCPTool:
 class MCPResource:
     """MCP 资源"""
 
-    uri: str                       # 资源 URI
-    name: str = ""                 # 资源名称
-    description: str = ""          # 资源描述
+    uri: str  # 资源 URI
+    name: str = ""  # 资源名称
+    description: str = ""  # 资源描述
     mime_type: str = "text/plain"  # MIME 类型
 
 
@@ -90,13 +92,14 @@ class MCPClient:
     async def _connect_http(self) -> None:
         """通过 HTTP 连接"""
         import aiohttp
+
         self._session = aiohttp.ClientSession()
 
     async def _discover_tools(self) -> None:
         """发现可用工具"""
         # 发送 tools/list 请求
         result = await self._send_request("tools/list")
-        
+
         if "tools" in result:
             for tool_data in result["tools"]:
                 tool = MCPTool(
@@ -159,10 +162,13 @@ class MCPClient:
         if not self._connected:
             await self.connect()
 
-        result = await self._send_request("tools/call", {
-            "name": tool_name,
-            "arguments": arguments,
-        })
+        result = await self._send_request(
+            "tools/call",
+            {
+                "name": tool_name,
+                "arguments": arguments,
+            },
+        )
 
         if "error" in result:
             raise NetworkError(f"MCP 工具调用失败: {result['error']}")
@@ -180,7 +186,7 @@ class MCPClient:
     async def list_resources(self) -> list[MCPResource]:
         """列出所有资源"""
         result = await self._send_request("resources/list")
-        
+
         resources = []
         if "resources" in result:
             for res_data in result["resources"]:
@@ -197,9 +203,12 @@ class MCPClient:
 
     async def read_resource(self, uri: str) -> str:
         """读取资源内容"""
-        result = await self._send_request("resources/read", {
-            "uri": uri,
-        })
+        result = await self._send_request(
+            "resources/read",
+            {
+                "uri": uri,
+            },
+        )
 
         if "contents" in result and result["contents"]:
             return result["contents"][0].get("text", "")

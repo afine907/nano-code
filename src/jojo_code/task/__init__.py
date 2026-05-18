@@ -7,10 +7,10 @@ from jojo_code.task.executor import (
     TaskFunc,
 )
 from jojo_code.task.id import (
+    TASK_PREFIXES,
     generate_task_id,
     parse_task_id,
     validate_task_id,
-    TASK_PREFIXES,
 )
 from jojo_code.task.types import (
     Task,

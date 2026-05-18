@@ -82,8 +82,9 @@ def yaml_to_json(yaml_str: str) -> str:
         JSON 字符串
     """
     try:
-        import yaml
         import json
+
+        import yaml
 
         data = yaml.safe_load(yaml_str)
         return json.dumps(data, indent=2, ensure_ascii=False)
@@ -104,8 +105,9 @@ def json_to_yaml(json_str: str) -> str:
         YAML 字符串
     """
     try:
-        import yaml
         import json
+
+        import yaml
 
         data = json.loads(json_str)
         return yaml.dump(data, allow_unicode=True, default_flow_style=False)
@@ -142,8 +144,15 @@ def _deep_diff(obj1: Any, obj2: Any, path: str = "") -> list[dict[str, Any]]:
     """深度比较两个对象"""
     diffs = []
 
-    if type(obj1) != type(obj2):
-        diffs.append({"path": path, "type": "type_changed", "from": type(obj1).__name__, "to": type(obj2).__name__})
+    if type(obj1) is not type(obj2):
+        diffs.append(
+            {
+                "path": path,
+                "type": "type_changed",
+                "from": type(obj1).__name__,
+                "to": type(obj2).__name__,
+            }
+        )
         return diffs
 
     if isinstance(obj1, dict):
@@ -168,4 +177,11 @@ def _deep_diff(obj1: Any, obj2: Any, path: str = "") -> list[dict[str, Any]]:
     return diffs
 
 
-__all__ = ["validate_json", "format_json", "minify_json", "yaml_to_json", "json_to_yaml", "diff_json"]
+__all__ = [
+    "validate_json",
+    "format_json",
+    "minify_json",
+    "yaml_to_json",
+    "json_to_yaml",
+    "diff_json",
+]

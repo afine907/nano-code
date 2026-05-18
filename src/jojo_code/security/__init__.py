@@ -23,11 +23,11 @@ from jojo_code.security.path_guard import PathGuard
 from jojo_code.security.permission import PermissionLevel, PermissionResult
 from jojo_code.security.risk import RISK_PATTERNS, assess_risk, get_risk_description
 from jojo_code.security.rule import (
+    PermissionRule,
     RuleAction,
     RuleEngine,
     RuleFactory,
     RuleMatchType,
-    PermissionRule,
 )
 
 __all__ = [

@@ -55,7 +55,6 @@ def extract_code(path: str, language: str = "") -> dict[str, Any]:
     Returns:
         提取的代码块列表
     """
-    from pathlib import Path
 
     path = Path(path)
     if not path.exists():
@@ -93,7 +92,6 @@ def count_lines(path: str, pattern: str = "") -> dict[str, Any]:
     Returns:
         行数统计
     """
-    from pathlib import Path
     import re
 
     path = Path(path)
@@ -114,7 +112,7 @@ def count_lines(path: str, pattern: str = "") -> dict[str, Any]:
                 lines = len(f.read_text(encoding="utf-8", errors="ignore").splitlines())
                 files[str(f)] = lines
                 total += lines
-            except:
+            except Exception:
                 pass
 
     return {"files": files, "total": total}

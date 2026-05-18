@@ -2,13 +2,14 @@
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any
 
 
 @dataclass
 class DenialRecord:
     """拒绝记录"""
+
     tool_name: str
     args: dict[str, Any]
     reason: str
@@ -239,7 +240,9 @@ class AdaptivePermissionMixin:
 
             # 检查是否超过阈值
             if self._denial_tracker.is_threshold_exceeded(tool_name, args):
-                return False, f"操作被连续拒绝 {self._denial_tracker.threshold} 次，请检查参数或权限配置"
+                threshold = self._denial_tracker.threshold
+            msg = f"操作被连续拒绝 {threshold} 次，请检查参数或权限配置"
+            return False, msg
 
             return False, result.reason or "权限被拒绝"
 

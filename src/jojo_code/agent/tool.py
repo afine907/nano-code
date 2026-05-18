@@ -1,22 +1,18 @@
 """AgentTool - 将子 Agent 封装为 LangChain 工具"""
 
-from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field
 
-from jojo_code.agent.sub import AgentConfig, AgentRegistry, SubAgent
+from jojo_code.agent.sub import AgentConfig, SubAgent
 
 
 class AgentToolInput(BaseModel):
     """AgentTool 输入schema"""
 
     task: str = Field(description="要执行的任务描述")
-    context: dict[str, Any] = Field(
-        default_factory=dict,
-        description="传递给 Agent 的额外上下文"
-    )
+    context: dict[str, Any] = Field(default_factory=dict, description="传递给 Agent 的额外上下文")
 
 
 class AgentTool(BaseTool):

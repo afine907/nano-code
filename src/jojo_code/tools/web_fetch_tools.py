@@ -1,7 +1,5 @@
 """网页抓取工具"""
 
-from typing import Any
-
 from langchain_core.tools import tool
 
 

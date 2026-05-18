@@ -2,10 +2,8 @@
 
 import secrets
 import string
-from typing import Any
 
 from jojo_code.task.types import TaskType
-
 
 # 任务 ID 前缀映射
 TASK_PREFIXES: dict[TaskType, str] = {
@@ -39,8 +37,7 @@ def generate_task_id(task_type: TaskType) -> str:
     """
     prefix = TASK_PREFIXES.get(task_type, DEFAULT_PREFIX)
     random_part = "".join(
-        secrets.choice(string.ascii_lowercase + string.digits)
-        for _ in range(RANDOM_LENGTH)
+        secrets.choice(string.ascii_lowercase + string.digits) for _ in range(RANDOM_LENGTH)
     )
     return f"{prefix}{random_part}"
 

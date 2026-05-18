@@ -30,7 +30,11 @@ def http_get(url: str, headers: dict[str, str] | None = None) -> dict[str, Any]:
 
 
 @tool("http_post")
-def http_post(url: str, data: dict[str, Any] | None = None, json_data: dict[str, Any] | None = None) -> dict[str, Any]:
+def http_post(
+    url: str,
+    data: dict[str, Any] | None = None,
+    json_data: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """发送 POST 请求
 
     Args:

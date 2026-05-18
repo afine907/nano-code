@@ -1,6 +1,6 @@
 """Tools for jojo-code agent."""
 
-from jojo_code.tools.registry import ToolRegistry, Tool, tool, PermissionError
+from jojo_code.tools.registry import PermissionError, Tool, ToolRegistry, tool
 
 __all__ = [
     "ToolRegistry",

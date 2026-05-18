@@ -11,11 +11,11 @@ T = TypeVar("T")  # 输出类型
 class TaskStatus(Enum):
     """任务状态"""
 
-    PENDING = "pending"      # 待执行
-    RUNNING = "running"      # 执行中
+    PENDING = "pending"  # 待执行
+    RUNNING = "running"  # 执行中
     COMPLETED = "completed"  # 已完成
-    FAILED = "failed"        # 失败
-    KILLED = "killed"        # 被终止
+    FAILED = "failed"  # 失败
+    KILLED = "killed"  # 被终止
 
 
 class TaskType(Enum):

@@ -4,8 +4,9 @@ import asyncio
 import functools
 import logging
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, TypeVar
+from typing import Any, TypeVar
 
 from jojo_code.core.error_code import ErrorCode, is_retryable_error
 
@@ -18,11 +19,11 @@ T = TypeVar("T")
 class RetryConfig:
     """重试配置"""
 
-    max_attempts: int = 3           # 最大尝试次数
-    base_delay: float = 1.0         # 基础延迟 (秒)
-    max_delay: float = 60.0         # 最大延迟 (秒)
-    exponential_base: float = 2.0   # 指数退避基数
-    jitter: bool = True             # 是否添加随机抖动
+    max_attempts: int = 3  # 最大尝试次数
+    base_delay: float = 1.0  # 基础延迟 (秒)
+    max_delay: float = 60.0  # 最大延迟 (秒)
+    exponential_base: float = 2.0  # 指数退避基数
+    jitter: bool = True  # 是否添加随机抖动
     retry_on: list[ErrorCode] = field(default_factory=list)  # 重试的错误码
 
 
@@ -57,6 +58,7 @@ def calculate_delay(
     # 添加随机抖动
     if config.jitter:
         import random
+
         jitter = delay * 0.1 * random.random()
         delay += jitter
 
@@ -234,10 +236,7 @@ class RetryContext:
             except Exception as e:
                 last_exception = e
 
-                should_retry = (
-                    hasattr(e, "error_code") and
-                    is_retryable_error(e.error_code)
-                )
+                should_retry = hasattr(e, "error_code") and is_retryable_error(e.error_code)
 
                 if attempt >= self.config.max_attempts or not should_retry:
                     self.stats.failures += 1
