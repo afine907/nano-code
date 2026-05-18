@@ -509,7 +509,7 @@ class SkillTool(BaseTool):
          ├── 工具权限审批
          └── 进度显示
 
-  [T3-2] Skills 系统                        5天    T2-1    ⬜
+  [T3-2] Skills 系统                        5天    T2-1    ✅ 完成
          ├── Skill 定义格式
          ├── SkillTool
          ├── 内置 Skills
