@@ -5,7 +5,7 @@ import logging
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal, VerticalScroll
+from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, Static
 
 from jojo_code.cli.theme import COLORS, CSS
@@ -39,11 +39,11 @@ class JojoCodeApp(App):
         self._sidebar_visible = True
 
     # -------------------------------------------------------------------------
-    # Compose
+    # Compose - Claude Code layout: header | sidebar+chat | input | status
     # -------------------------------------------------------------------------
 
     def compose(self) -> ComposeResult:
-        # Header
+        # Header (top bar)
         with Horizontal(id="header"):
             yield Static("⭘ jojo-code", id="header-title")
             yield Static("build", id="header-mode")
@@ -51,30 +51,30 @@ class JojoCodeApp(App):
             yield Static("", id="header-spacer")
             yield Static("", id="header-conn")
 
-        # Main content area
+        # Main content: sidebar + chat (fills remaining space)
         with Horizontal(id="content"):
-            # Sidebar (file tree placeholder)
-            with VerticalScroll(id="sidebar"):
+            # Sidebar
+            with Vertical(id="sidebar"):
                 yield Static("FILES", classes="sidebar-section")
                 yield Static("No workspace open", classes="sidebar-item placeholder")
                 yield Static("─" * 24, classes="separator")
                 yield Static("SESSIONS", classes="sidebar-section")
                 yield Static("New chat", classes="sidebar-item active")
 
-            # Main chat area
-            with VerticalScroll(id="chat-wrapper"):
+            # Chat area (takes all remaining space)
+            with Vertical(id="chat-area"):
                 with ChatView(id="chat"):
                     yield Static(
                         "Type a message to start...\nUse /help for commands",
                         classes="placeholder",
                         id="welcome",
                     )
-                # Input area
-                with Container(id="input-area"):
+                # Input fixed at bottom
+                with Horizontal(id="input-area"):
                     yield InputBox(id="input-box")
                     yield Button("Send", id="send-btn", variant="primary")
 
-        # Status bar
+        # Status bar (bottom)
         with StatusBar(id="status-bar"):
             pass
 
@@ -140,7 +140,6 @@ class JojoCodeApp(App):
         """Process slash commands."""
         parts = cmd.strip().split()
         command = parts[0].lower()
-        self.query_one("#chat", VerticalScroll)
 
         commands = {
             "/help": "Commands: /mode, /clear, /quit",
@@ -173,7 +172,7 @@ class JojoCodeApp(App):
 
     async def _send_message(self, message: str) -> None:
         """Send message and handle streaming response."""
-        chat = self.query_one("#chat", VerticalScroll)
+        chat = self.query_one("#chat", ChatView)
         input_box = self.query_one("#input-box", InputBox)
         status_bar = self.query_one("#status-bar", StatusBar)
 
@@ -234,7 +233,7 @@ class JojoCodeApp(App):
 
     def action_clear(self) -> None:
         """Clear chat messages."""
-        chat = self.query_one("#chat", VerticalScroll)
+        chat = self.query_one("#chat", ChatView)
         chat.remove_children()
         chat.mount(
             Static(
@@ -265,21 +264,21 @@ class JojoCodeApp(App):
 
     def _add_user_message(self, content: str) -> None:
         """Add a user message bubble."""
-        chat = self.query_one("#chat", VerticalScroll)
+        chat = self.query_one("#chat", ChatView)
         bubble = Static(content, classes="message-user")
         chat.mount(bubble)
         chat.scroll_end(animate=False)
 
     def _add_assistant_message(self, content: str) -> None:
         """Add an assistant message bubble."""
-        chat = self.query_one("#chat", VerticalScroll)
+        chat = self.query_one("#chat", ChatView)
         bubble = Static(content, classes="message-assistant")
         chat.mount(bubble)
         chat.scroll_end(animate=False)
 
     def _add_system_message(self, content: str) -> None:
         """Add a system message."""
-        chat = self.query_one("#chat", VerticalScroll)
+        chat = self.query_one("#chat", ChatView)
         msg = Static(content, classes="message-tool")
         chat.mount(msg)
         chat.scroll_end(animate=False)

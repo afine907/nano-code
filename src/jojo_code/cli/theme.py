@@ -43,8 +43,6 @@ Screen {{
     color: white;
     padding-left: 8;
     padding-right: 8;
-    padding-top: 0;
-    padding-bottom: 0;
 }}
 
 #header-status {{
@@ -60,9 +58,16 @@ Screen {{
     padding-right: 2;
 }}
 
+/* === Main content area (sidebar + chat) === */
+#content {{
+    height: 1fr;
+    background: {COLORS["bg_primary"]};
+}}
+
 /* === Sidebar === */
 #sidebar {{
     width: 26;
+    height: 100%;
     background: {COLORS["bg_secondary"]};
     border-right: solid {COLORS["border"]};
 }}
@@ -95,18 +100,16 @@ Screen {{
     text-style: italic;
 }}
 
-/* === Main content area === */
-#content {{
-    background: {COLORS["bg_primary"]};
-}}
-
-/* === Chat === */
-#chat-wrapper {{
+/* === Chat area (chat + input stacked) === */
+#chat-area {{
     width: 1fr;
+    height: 100%;
 }}
 
+/* === Chat scrollable area === */
 #chat {{
     height: 1fr;
+    width: 100%;
     background: {COLORS["bg_primary"]};
 }}
 
@@ -141,7 +144,7 @@ Screen {{
 .message-tool {{
     background: {COLORS["bg_secondary"]};
     border: solid {COLORS["border"]};
-    border-left: heavy {COLORS["accent_orange"]};
+    border-left: solid {COLORS["accent_orange"]};
     padding-top: 4;
     padding-bottom: 4;
     padding-left: 10;
@@ -161,14 +164,21 @@ Screen {{
     padding-left: 12;
 }}
 
-/* === Input area === */
+/* === Welcome placeholder === */
+#welcome {{
+    color: {COLORS["text_muted"]};
+    text-style: italic;
+    padding-top: 2;
+    padding-left: 2;
+}}
+
+/* === Input area (fixed at bottom) === */
 #input-area {{
-    height: auto;
-    min-height: 3;
+    height: 3;
     background: {COLORS["bg_secondary"]};
     border-top: solid {COLORS["border"]};
-    padding-top: 6;
-    padding-bottom: 6;
+    padding-top: 0;
+    padding-bottom: 0;
     padding-left: 2;
     padding-right: 2;
 }}
@@ -242,11 +252,8 @@ VerticalScroll {{
     text-style: italic;
 }}
 
-/* === Welcome === */
-#welcome {{
-    color: {COLORS["text_muted"]};
-    text-style: italic;
-    padding-top: 2;
-    padding-left: 2;
+/* === Separator === */
+.separator {{
+    color: {COLORS["border"]};
 }}
 """
