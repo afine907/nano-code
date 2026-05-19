@@ -1,0 +1,299 @@
+[
+  {
+    "id": 1,
+    "name": "列出文件",
+    "input": "列出当前目录的文件",
+    "expected": {
+      "tool": "list_files",
+      "success": true,
+      "returns_list": true
+    }
+  },
+  {
+    "id": 2,
+    "name": "Shell命令执行",
+    "input": "执行 ls -la",
+    "expected": {
+      "tool": "bash",
+      "success": true,
+      "output_contains": ["total", "drwx"]
+    }
+  },
+  {
+    "id": 3,
+    "name": "代码生成-快速排序",
+    "input": "用Python实现快速排序算法",
+    "expected": {
+      "tool": "generate_code",
+      "success": true,
+      "contains": ["def quicksort", "partition", "return"]
+    }
+  },
+  {
+    "id": 4,
+    "name": "多轮对话-工具链",
+    "input": "先列出文件，再统计Python文件数量",
+    "expected": {
+      "tool_calls": 2,
+      "sequential": true,
+      "second_depends_on_first": true
+    }
+  },
+  {
+    "id": 5,
+    "name": "文件读取",
+    "input": "读取 src/jojo_code/__init__.py 文件内容",
+    "expected": {
+      "tool": "read_file",
+      "success": true,
+      "returns_content": true
+    }
+  },
+  {
+    "id": 6,
+    "name": "文件写入",
+    "input": "在 /tmp 目录下创建测试文件 test.txt，内容为 'hello jojo'",
+    "expected": {
+      "tool": "write_file",
+      "success": true,
+      "file_created": true
+    }
+  },
+  {
+    "id": 7,
+    "name": "Git状态查询",
+    "input": "查看当前Git仓库状态",
+    "expected": {
+      "tool": "git_status",
+      "success": true,
+      "shows_branch": true
+    }
+  },
+  {
+    "id": 8,
+    "name": "Git日志查看",
+    "input": "查看最近3条提交记录",
+    "expected": {
+      "tool": "git_log",
+      "success": true,
+      "commit_count": 3
+    }
+  },
+  {
+    "id": 9,
+    "name": "Web搜索",
+    "input": "搜索 Python 异步编程的最佳实践",
+    "expected": {
+      "tool": "web_search",
+      "success": true,
+      "has_results": true
+    }
+  },
+  {
+    "id": 10,
+    "name": "代码分析-查找函数",
+    "input": "在 src/jojo_code/tools/ 目录下查找所有包含 'def' 的Python文件",
+    "expected": {
+      "tool": "code_analysis",
+      "success": true,
+      "finds_functions": true
+    }
+  },
+  {
+    "id": 11,
+    "name": "复杂任务-创建项目结构",
+    "input": "在 /tmp 下创建一个新的 Python 项目结构，包含 src/tests 目录和 requirements.txt",
+    "expected": {
+      "tool_calls": 4,
+      "creates_dirs": true,
+      "creates_files": true
+    }
+  },
+  {
+    "id": 12,
+    "name": "错误处理-文件不存在",
+    "input": "尝试读取一个不存在的文件",
+    "expected": {
+      "tool": "read_file",
+      "handles_error": true,
+      "graceful_failure": true
+    }
+  },
+  {
+    "id": 13,
+    "name": "错误处理-无效命令",
+    "input": "执行一个无效的Shell命令",
+    "expected": {
+      "tool": "bash",
+      "handles_error": true,
+      "returns_error_message": true
+    }
+  },
+  {
+    "id": 14,
+    "name": "内存保持-多轮上下文",
+    "input": "先告诉Agent你叫张三，再问它我叫什么",
+    "expected": {
+      "context_preserved": true,
+      "remembers_user_info": true
+    }
+  },
+  {
+    "id": 15,
+    "name": "终止条件-无需工具",
+    "input": "回答今天天气怎么样",
+    "expected": {
+      "no_tool_call": true,
+      "direct_answer": true
+    }
+  },
+  {
+    "id": 16,
+    "name": "终止条件-简单计算",
+    "input": "计算 123 * 456",
+    "expected": {
+      "no_tool_call": true,
+      "returns_correct_answer": true
+    }
+  },
+  {
+    "id": 17,
+    "name": "代码生成-单元测试",
+    "input": "为一个计算阶乘的函数编写pytest单元测试",
+    "expected": {
+      "tool": "generate_code",
+      "success": true,
+      "contains": ["def test", "factorial", "assert"]
+    }
+  },
+  {
+    "id": 18,
+    "name": "代码生成-REST API",
+    "input": "用Flask实现一个简单的用户管理REST API，包含增删改查",
+    "expected": {
+      "tool": "generate_code",
+      "success": true,
+      "contains": ["@app.route", "GET", "POST", "PUT", "DELETE"]
+    }
+  },
+  {
+    "id": 19,
+    "name": "正则表达式处理",
+    "input": "用正则提取字符串中的邮箱地址",
+    "expected": {
+      "tool": "generate_code",
+      "success": true,
+      "uses_regex": true
+    }
+  },
+  {
+    "id": 20,
+    "name": "数据库操作模拟",
+    "input": "写一个Python函数，模拟增删改查用户表的操作",
+    "expected": {
+      "tool": "generate_code",
+      "success": true,
+      "contains": ["def.*create", "def.*delete", "def.*update", "def.*query"]
+    }
+  },
+  {
+    "id": 21,
+    "name": "Shell管道操作",
+    "input": "统计当前目录下 .py 文件的数量",
+    "expected": {
+      "tool": "bash",
+      "success": true,
+      "uses_pipe": true,
+      "counts_files": true
+    }
+  },
+  {
+    "id": 22,
+    "name": "JSON解析处理",
+    "input": "解析 JSON 数据 {'name': '张三', 'age': 25} 并提取 name 字段",
+    "expected": {
+      "tool": "generate_code",
+      "success": true,
+      "parses_json": true
+    }
+  },
+  {
+    "id": 23,
+    "name": "并发任务-同时执行",
+    "input": "同时查看系统内存和CPU使用情况",
+    "expected": {
+      "tool": "bash",
+      "success": true,
+      "shows_system_info": true
+    }
+  },
+  {
+    "id": 24,
+    "name": "边界条件-空输入",
+    "input": "处理空字符串的输入",
+    "expected": {
+      "handles_edge_case": true,
+      "no_crash": true
+    }
+  },
+  {
+    "id": 25,
+    "name": "边界条件-超大输入",
+    "input": "处理一个很长的字符串（10000字符）",
+    "expected": {
+      "handles_edge_case": true,
+      "no_crash": true,
+      "performance_acceptable": true
+    }
+  },
+  {
+    "id": 26,
+    "name": "代码重构建议",
+    "input": "分析这段代码并提出重构建议: def foo(x): return x*2",
+    "expected": {
+      "tool": "code_analysis",
+      "success": true,
+      "provides_suggestions": true
+    }
+  },
+  {
+    "id": 27,
+    "name": "文档生成",
+    "input": "为这个函数生成文档字符串: def add(a, b): return a + b",
+    "expected": {
+      "tool": "generate_code",
+      "success": true,
+      "contains_docstring": true
+    }
+  },
+  {
+    "id": 28,
+    "name": "类型提示添加",
+    "input": "为这个函数添加类型提示: def process(data): return sorted(data)",
+    "expected": {
+      "tool": "generate_code",
+      "success": true,
+      "has_type_hints": true
+    }
+  },
+  {
+    "id": 29,
+    "name": "Git分支操作",
+    "input": "创建一个新分支 feature-test 并切换过去",
+    "expected": {
+      "tool": "git_branch",
+      "success": true,
+      "branch_created": true
+    }
+  },
+  {
+    "id": 30,
+    "name": "Web内容获取",
+    "input": "获取 https://httpbin.org/get 的响应内容",
+    "expected": {
+      "tool": "web_fetch",
+      "success": true,
+      "returns_content": true
+    }
+  }
+]
