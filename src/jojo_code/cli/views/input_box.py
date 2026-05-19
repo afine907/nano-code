@@ -13,8 +13,8 @@ class InputBox(Horizontal):
     """
 
     def compose(self) -> ComposeResult:
-        yield Label("❯ ", id="prompt")
-        yield Input(placeholder="输入消息... (Enter 发送, /help 查看命令)", id="input")
+        yield Label("❯", id="prompt")
+        yield Input(placeholder="Type a message... (/help for commands)", id="input")
 
     def on_key(self, event: Key) -> None:
         """处理按键事件"""

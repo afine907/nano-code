@@ -20,29 +20,36 @@ COLORS = {
 }
 
 CSS = f"""
+/* === Global === */
 Screen {{
-    background: {COLORS['bg_primary']};
-    color: {COLORS['text_primary']};
+    background: {COLORS["bg_primary"]};
+    color: {COLORS["text_primary"]};
 }}
 
+/* === Header === */
 #header {{
     height: 3;
-    background: {COLORS['bg_secondary']};
-    border-bottom: solid {COLORS['border']};
+    background: {COLORS["bg_secondary"]};
+    border-bottom: solid {COLORS["border"]};
 }}
 
 #header-title {{
-    color: {COLORS['text_primary']};
-    padding-left: 1;
+    color: {COLORS["text_primary"]};
+    padding-left: 2;
 }}
 
 #header-mode {{
-    color: {COLORS['accent_purple']};
-    padding-left: 1;
+    background: {COLORS["accent_purple"]};
+    color: white;
+    padding-left: 8;
+    padding-right: 8;
+    padding-top: 0;
+    padding-bottom: 0;
 }}
 
 #header-status {{
-    color: {COLORS['text_muted']};
+    color: {COLORS["text_muted"]};
+    padding-left: 8;
 }}
 
 #header-spacer {{
@@ -50,20 +57,22 @@ Screen {{
 }}
 
 #header-conn {{
-    padding-right: 1;
+    padding-right: 2;
 }}
 
+/* === Sidebar === */
 #sidebar {{
     width: 26;
-    background: {COLORS['bg_secondary']};
-    border-right: solid {COLORS['border']};
+    background: {COLORS["bg_secondary"]};
+    border-right: solid {COLORS["border"]};
 }}
 
 .sidebar-section {{
-    color: {COLORS['text_muted']};
+    color: {COLORS["text_muted"]};
     text-style: bold;
     padding-top: 1;
-    padding-left: 1;
+    padding-left: 2;
+    padding-bottom: 1;
 }}
 
 .sidebar-item {{
@@ -73,85 +82,107 @@ Screen {{
 }}
 
 .sidebar-item:hover {{
-    background: {COLORS['bg_hover']};
+    background: {COLORS["bg_hover"]};
 }}
 
 .sidebar-item.active {{
-    background: {COLORS['accent_purple']};
-    color: {COLORS['text_primary']};
+    background: {COLORS["accent_purple"]};
+    color: white;
 }}
 
 .placeholder {{
-    color: {COLORS['text_muted']};
+    color: {COLORS["text_muted"]};
     text-style: italic;
 }}
 
+/* === Main content area === */
+#content {{
+    background: {COLORS["bg_primary"]};
+}}
+
+/* === Chat === */
 #chat-wrapper {{
     width: 1fr;
 }}
 
 #chat {{
     height: 1fr;
-    padding: 1;
-    background: {COLORS['bg_primary']};
+    background: {COLORS["bg_primary"]};
 }}
 
+/* === Message bubbles === */
 .message-user {{
-    background: {COLORS['accent_blue']};
-    color: #ffffff;
-    padding-top: 8;
-    padding-bottom: 8;
+    background: {COLORS["accent_blue"]};
+    color: white;
+    padding-top: 6;
+    padding-bottom: 6;
     padding-left: 12;
     padding-right: 12;
     margin-top: 4;
     margin-bottom: 4;
-    max-width: 75%;
+    margin-left: 40;
+    max-width: 70%;
     width: auto;
 }}
 
 .message-assistant {{
-    background: {COLORS['bg_tertiary']};
-    border: solid {COLORS['border']};
-    padding-top: 8;
-    padding-bottom: 8;
+    background: {COLORS["bg_tertiary"]};
+    border: solid {COLORS["border"]};
+    padding-top: 6;
+    padding-bottom: 6;
     padding-left: 12;
     padding-right: 12;
     margin-top: 4;
     margin-bottom: 4;
-    max-width: 85%;
+    max-width: 80%;
     width: auto;
 }}
 
 .message-tool {{
-    background: {COLORS['bg_secondary']};
-    border: solid {COLORS['border']};
+    background: {COLORS["bg_secondary"]};
+    border: solid {COLORS["border"]};
+    border-left: heavy {COLORS["accent_orange"]};
     padding-top: 4;
     padding-bottom: 4;
     padding-left: 10;
     padding-right: 10;
-    margin-top: 2;
-    margin-bottom: 2;
-    max-width: 85%;
-    color: {COLORS['accent_orange']};
+    margin-top: 4;
+    margin-bottom: 4;
+    max-width: 80%;
+    color: {COLORS["accent_orange"]};
 }}
 
+/* === Loading === */
 .loading-dots {{
-    color: {COLORS['accent_purple']};
+    color: {COLORS["accent_purple"]};
     text-style: bold;
+    padding-top: 4;
+    padding-bottom: 4;
+    padding-left: 12;
 }}
 
+/* === Input area === */
 #input-area {{
     height: auto;
     min-height: 3;
-    max-height: 8;
-    background: {COLORS['bg_secondary']};
-    border-top: solid {COLORS['border']};
-    padding: 8;
+    background: {COLORS["bg_secondary"]};
+    border-top: solid {COLORS["border"]};
+    padding-top: 6;
+    padding-bottom: 6;
+    padding-left: 2;
+    padding-right: 2;
+}}
+
+#prompt {{
+    color: {COLORS["accent_purple"]};
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 4;
 }}
 
 #input-box {{
-    border: solid {COLORS['border']};
-    background: {COLORS['bg_tertiary']};
+    border: solid {COLORS["border"]};
+    background: {COLORS["bg_tertiary"]};
     padding-top: 0;
     padding-bottom: 0;
     padding-left: 12;
@@ -159,55 +190,63 @@ Screen {{
 }}
 
 #input-box:focus {{
-    border: solid {COLORS['border_focus']};
+    border: solid {COLORS["border_focus"]};
 }}
 
 #send-btn {{
-    background: {COLORS['accent_purple']};
+    background: {COLORS["accent_purple"]};
     color: white;
+    margin-left: 6;
     padding-top: 0;
     padding-bottom: 0;
-    padding-left: 4;
-    padding-right: 4;
+    padding-left: 12;
+    padding-right: 12;
 }}
 
 #send-btn:hover {{
-    background: {COLORS['accent_purple_dim']};
+    background: {COLORS["accent_purple_dim"]};
 }}
 
+/* === Status bar === */
 #status-bar {{
     height: 1;
-    background: {COLORS['bg_secondary']};
-    border-top: solid {COLORS['border']};
-    color: {COLORS['text_muted']};
+    background: {COLORS["bg_secondary"]};
+    border-top: solid {COLORS["border"]};
+    color: {COLORS["text_muted"]};
 }}
 
 .status-item {{
-    color: {COLORS['text_muted']};
+    color: {COLORS["text_muted"]};
 }}
 
 .status-connected {{
-    color: {COLORS['accent_green']};
+    color: {COLORS["accent_green"]};
 }}
 
 .status-disconnected {{
-    color: {COLORS['accent_red']};
+    color: {COLORS["accent_red"]};
 }}
 
 .status-model {{
-    color: {COLORS['accent_purple']};
+    color: {COLORS["accent_purple"]};
 }}
 
+/* === Scrollbar === */
 VerticalScroll {{
-    scrollbar-color: {COLORS['border']} {COLORS['bg_primary']};
+    scrollbar-color: {COLORS["border"]} {COLORS["bg_primary"]};
 }}
 
+/* === Thinking === */
 .thinking {{
-    color: {COLORS['accent_yellow']};
+    color: {COLORS["accent_yellow"]};
     text-style: italic;
 }}
 
-.separator {{
-    color: {COLORS['border']};
+/* === Welcome === */
+#welcome {{
+    color: {COLORS["text_muted"]};
+    text-style: italic;
+    padding-top: 2;
+    padding-left: 2;
 }}
 """

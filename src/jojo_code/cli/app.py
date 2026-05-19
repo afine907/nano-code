@@ -2,15 +2,13 @@
 
 import asyncio
 import logging
-from typing import Any
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, VerticalScroll
-from textual.widgets import Button, Label, Static
+from textual.widgets import Button, Static
 
-from jojo_code.cli.theme import CSS, COLORS
-from jojo_code.cli.views.chat import ChatView
+from jojo_code.cli.theme import COLORS, CSS
 from jojo_code.cli.views.input_box import InputBox, NewMessage
 from jojo_code.cli.views.status_bar import StatusBar
 
@@ -58,7 +56,7 @@ class JojoCodeApp(App):
             with VerticalScroll(id="sidebar"):
                 yield Static("FILES", classes="sidebar-section")
                 yield Static("No workspace open", classes="sidebar-item placeholder")
-                yield Static("─────────", classes="separator")
+                yield Static("─" * 24, classes="separator")
                 yield Static("SESSIONS", classes="sidebar-section")
                 yield Static("New chat", classes="sidebar-item active")
 
@@ -141,10 +139,10 @@ class JojoCodeApp(App):
         """Process slash commands."""
         parts = cmd.strip().split()
         command = parts[0].lower()
-        chat = self.query_one("#chat", VerticalScroll)
+        self.query_one("#chat", VerticalScroll)
 
         commands = {
-            "/help": "Commands:\n  /mode [plan|build] - Switch mode\n  /clear - Clear chat\n  /quit - Quit",
+            "/help": "Commands: /mode, /clear, /quit",
             "/clear": "action_clear",
             "/quit": "action_quit",
             "/exit": "action_quit",
