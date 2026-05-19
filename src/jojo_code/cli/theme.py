@@ -20,51 +20,37 @@ COLORS = {
 }
 
 CSS = f"""
+/* ===========================================================================
+   Layout: Claude Code style (explicit container)
+   Header (height: 3, fixed)
+     └─ Middle (height: 1fr)
+          ├─ Sidebar (width: 26, fixed)
+          └─ Chat area (width: 1fr)
+               ├─ Chat (height: 1fr, scrollable)
+               └─ Input (height: 3, fixed at bottom)
+   Status bar (height: 1, fixed)
+   =========================================================================== */
+
 /* === Global === */
 Screen {{
     background: {COLORS["bg_primary"]};
     color: {COLORS["text_primary"]};
 }}
 
-/* === Header === */
+/* === Header - fixed at top === */
 #header {{
     height: 3;
     background: {COLORS["bg_secondary"]};
     border-bottom: solid {COLORS["border"]};
 }}
 
-#header-title {{
-    color: {COLORS["text_primary"]};
-    padding-left: 2;
-}}
-
-#header-mode {{
-    background: {COLORS["accent_purple"]};
-    color: white;
-    padding-left: 8;
-    padding-right: 8;
-}}
-
-#header-status {{
-    color: {COLORS["text_muted"]};
-    padding-left: 8;
-}}
-
-#header-spacer {{
-    width: 1fr;
-}}
-
-#header-conn {{
-    padding-right: 2;
-}}
-
-/* === Main content area (sidebar + chat) === */
-#content {{
+/* === Middle - fills remaining vertical space === */
+#middle {{
     height: 1fr;
-    background: {COLORS["bg_primary"]};
+    width: 100%;
 }}
 
-/* === Sidebar === */
+/* === Sidebar - fixed width, full height === */
 #sidebar {{
     width: 26;
     height: 100%;
@@ -95,21 +81,16 @@ Screen {{
     color: white;
 }}
 
-.placeholder {{
-    color: {COLORS["text_muted"]};
-    text-style: italic;
-}}
-
-/* === Chat area (chat + input stacked) === */
+/* === Chat area - chat + input stacked === */
 #chat-area {{
     width: 1fr;
     height: 100%;
 }}
 
-/* === Chat scrollable area === */
+/* === Chat - scrollable main content === */
 #chat {{
-    height: 1fr;
     width: 100%;
+    height: 1fr;
     background: {COLORS["bg_primary"]};
 }}
 
@@ -155,7 +136,6 @@ Screen {{
     color: {COLORS["accent_orange"]};
 }}
 
-/* === Loading === */
 .loading-dots {{
     color: {COLORS["accent_purple"]};
     text-style: bold;
@@ -164,7 +144,6 @@ Screen {{
     padding-left: 12;
 }}
 
-/* === Welcome placeholder === */
 #welcome {{
     color: {COLORS["text_muted"]};
     text-style: italic;
@@ -172,15 +151,11 @@ Screen {{
     padding-left: 2;
 }}
 
-/* === Input area (fixed at bottom) === */
+/* === Input area - fixed at bottom of chat area === */
 #input-area {{
     height: 3;
     background: {COLORS["bg_secondary"]};
     border-top: solid {COLORS["border"]};
-    padding-top: 0;
-    padding-bottom: 0;
-    padding-left: 2;
-    padding-right: 2;
 }}
 
 #prompt {{
@@ -217,16 +192,47 @@ Screen {{
     background: {COLORS["accent_purple_dim"]};
 }}
 
-/* === Status bar === */
+/* === Status bar - fixed at bottom === */
 #status-bar {{
     height: 1;
     background: {COLORS["bg_secondary"]};
     border-top: solid {COLORS["border"]};
-    color: {COLORS["text_muted"]};
 }}
 
-.status-item {{
+/* === Header elements === */
+#header-title {{
+    color: {COLORS["text_primary"]};
+    padding-left: 2;
+}}
+
+#header-mode {{
+    background: {COLORS["accent_purple"]};
+    color: white;
+    padding-left: 8;
+    padding-right: 8;
+}}
+
+#header-status {{
     color: {COLORS["text_muted"]};
+    padding-left: 8;
+}}
+
+#header-spacer {{
+    width: 1fr;
+}}
+
+#header-conn {{
+    padding-right: 2;
+}}
+
+/* === Misc === */
+.placeholder {{
+    color: {COLORS["text_muted"]};
+    text-style: italic;
+}}
+
+.separator {{
+    color: {COLORS["border"]};
 }}
 
 .status-connected {{
@@ -237,23 +243,7 @@ Screen {{
     color: {COLORS["accent_red"]};
 }}
 
-.status-model {{
-    color: {COLORS["accent_purple"]};
-}}
-
-/* === Scrollbar === */
 VerticalScroll {{
     scrollbar-color: {COLORS["border"]} {COLORS["bg_primary"]};
-}}
-
-/* === Thinking === */
-.thinking {{
-    color: {COLORS["accent_yellow"]};
-    text-style: italic;
-}}
-
-/* === Separator === */
-.separator {{
-    color: {COLORS["border"]};
 }}
 """

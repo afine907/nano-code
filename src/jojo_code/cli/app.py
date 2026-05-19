@@ -1,4 +1,17 @@
-"""jojo-code Textual App - Claude Code inspired design"""
+"""jojo-code Textual App - Claude Code inspired design
+
+Layout (explicit container approach):
+    Header (fixed 3 lines, horizontal)
+    Middle (height: 1fr):
+        Sidebar (fixed 26 cols) | Chat (1fr, VerticalScroll)
+    Input (fixed 3 lines, horizontal)
+    Status (fixed 1 line)
+
+Textual sizing rules:
+    - Fixed-size siblings get their space first
+    - 1fr takes ALL remaining space in the container
+    - Input/status are fixed → chat gets everything left
+"""
 
 import asyncio
 import logging
@@ -17,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 class JojoCodeApp(App):
-    """jojo-code TUI application - Claude Code inspired design"""
+    """jojo-code TUI application - Claude Code inspired design."""
 
     TITLE = "jojo-code"
     SUB_TITLE = "Python Coding Agent"
@@ -39,11 +52,11 @@ class JojoCodeApp(App):
         self._sidebar_visible = True
 
     # -------------------------------------------------------------------------
-    # Compose - Claude Code layout: header | sidebar+chat | input | status
+    # Compose
     # -------------------------------------------------------------------------
 
     def compose(self) -> ComposeResult:
-        # Header (top bar)
+        # ── Header (top, fixed 3 lines) ────────────────────────────────────
         with Horizontal(id="header"):
             yield Static("⭘ jojo-code", id="header-title")
             yield Static("build", id="header-mode")
@@ -51,17 +64,20 @@ class JojoCodeApp(App):
             yield Static("", id="header-spacer")
             yield Static("", id="header-conn")
 
-        # Main content: sidebar + chat (fills remaining space)
-        with Horizontal(id="content"):
-            # Sidebar
+        # ── Middle: sidebar + chat (1fr fills remaining space) ────────────
+        with Horizontal(id="middle"):
+            # Sidebar (fixed 26 cols, scrolls independently)
             with Vertical(id="sidebar"):
                 yield Static("FILES", classes="sidebar-section")
-                yield Static("No workspace open", classes="sidebar-item placeholder")
+                yield Static(
+                    "No workspace open",
+                    classes="sidebar-item placeholder",
+                )
                 yield Static("─" * 24, classes="separator")
                 yield Static("SESSIONS", classes="sidebar-section")
                 yield Static("New chat", classes="sidebar-item active")
 
-            # Chat area (takes all remaining space)
+            # Chat area (takes 1fr = all remaining space)
             with Vertical(id="chat-area"):
                 with ChatView(id="chat"):
                     yield Static(
@@ -69,12 +85,12 @@ class JojoCodeApp(App):
                         classes="placeholder",
                         id="welcome",
                     )
-                # Input fixed at bottom
+                # Input (fixed 3 lines, always at bottom)
                 with Horizontal(id="input-area"):
                     yield InputBox(id="input-box")
                     yield Button("Send", id="send-btn", variant="primary")
 
-        # Status bar (bottom)
+        # ── Status bar (bottom, fixed 1 line) ─────────────────────────────
         with StatusBar(id="status-bar"):
             pass
 
@@ -176,16 +192,13 @@ class JojoCodeApp(App):
         input_box = self.query_one("#input-box", InputBox)
         status_bar = self.query_one("#status-bar", StatusBar)
 
-        # Remove welcome placeholder
         welcome = self.query_one("#welcome", Static)
         if welcome:
             welcome.remove()
 
-        # Show user message
         self._add_user_message(message)
         input_box.value = ""
 
-        # Show loading
         loading = Static(" ◐ thinking...", id="loading", classes="loading-dots")
         chat.mount(loading)
         chat.scroll_end(animate=False)
