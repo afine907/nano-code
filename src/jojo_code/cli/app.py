@@ -9,6 +9,7 @@ from textual.containers import Container, Horizontal, VerticalScroll
 from textual.widgets import Button, Static
 
 from jojo_code.cli.theme import COLORS, CSS
+from jojo_code.cli.views.chat import ChatView
 from jojo_code.cli.views.input_box import InputBox, NewMessage
 from jojo_code.cli.views.status_bar import StatusBar
 
@@ -62,7 +63,7 @@ class JojoCodeApp(App):
 
             # Main chat area
             with VerticalScroll(id="chat-wrapper"):
-                with VerticalScroll(id="chat"):
+                with ChatView(id="chat"):
                     yield Static(
                         "Type a message to start...\nUse /help for commands",
                         classes="placeholder",

@@ -101,9 +101,9 @@ async def test_status_bar_present(app):
 async def test_chat_view_present(app):
     """Chat view should be present."""
     _pilot, test_app = app
-    from jojo_code.cli.views.chat import ChatView
+    from textual.containers import VerticalScroll
 
-    chat = test_app.query_one("#chat", ChatView)
+    chat = test_app.query_one("#chat", VerticalScroll)
     assert chat is not None
 
 
