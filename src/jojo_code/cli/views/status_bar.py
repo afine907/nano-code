@@ -49,3 +49,21 @@ class StatusBar(Static):
         self.messages = messages
         self.tokens = tokens
         self.refresh()
+
+    def update(
+        self,
+        model: str | None = None,
+        connected: bool | None = None,
+        messages: int | None = None,
+        tokens: int | None = None,
+    ) -> None:
+        """更新状态栏字段"""
+        if model is not None:
+            self.model = model
+        if connected is not None:
+            self.connected = connected
+        if messages is not None:
+            self.messages = messages
+        if tokens is not None:
+            self.tokens = tokens
+        self.refresh()

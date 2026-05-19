@@ -1,15 +1,15 @@
-"""jojo-code Textual App
-
-主应用入口，整合所有视图组件。
-"""
+"""jojo-code Textual App - Claude Code inspired design"""
 
 import asyncio
 import logging
+from typing import Any
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.widgets import Footer, Header
+from textual.containers import Container, Horizontal, VerticalScroll
+from textual.widgets import Button, Label, Static
 
+from jojo_code.cli.theme import CSS, COLORS
 from jojo_code.cli.views.chat import ChatView
 from jojo_code.cli.views.input_box import InputBox, NewMessage
 from jojo_code.cli.views.status_bar import StatusBar
@@ -18,35 +18,17 @@ logger = logging.getLogger(__name__)
 
 
 class JojoCodeApp(App):
-    """jojo-code TUI 应用"""
+    """jojo-code TUI application - Claude Code inspired design"""
 
     TITLE = "jojo-code"
     SUB_TITLE = "Python Coding Agent"
 
-    CSS = """
-    #chat {
-        height: 1fr;
-        border: solid $primary;
-        margin: 0 1;
-    }
-
-    #input-box {
-        height: 3;
-        margin: 0 1;
-    }
-
-    #status-bar {
-        height: 1;
-        dock: bottom;
-        background: $primary-background-lighten-2;
-        color: $text;
-    }
-    """
+    CSS = CSS
 
     BINDINGS = [
         Binding("ctrl+c", "quit", "退出"),
         Binding("ctrl+l", "clear", "清空"),
-        Binding("ctrl+p", "toggle_mode", "切换模式"),
+        Binding("ctrl+p", "toggle_sidebar", "切换侧边栏"),
     ]
 
     def __init__(self, server_url: str = "ws://localhost:8080/ws", **kwargs):
@@ -54,158 +36,274 @@ class JojoCodeApp(App):
         self.server_url = server_url
         self._ws_client = None
         self._mode = "build"
+        self._connected = False
+        self._sidebar_visible = True
+
+    # -------------------------------------------------------------------------
+    # Compose
+    # -------------------------------------------------------------------------
 
     def compose(self) -> ComposeResult:
-        yield Header()
-        yield ChatView(id="chat")
-        yield InputBox(id="input-box")
-        yield StatusBar(id="status-bar")
-        yield Footer()
+        # Header
+        with Horizontal(id="header"):
+            yield Static("⭘ jojo-code", id="header-title")
+            yield Static("build", id="header-mode")
+            yield Static("", id="header-status")
+            yield Static("", id="header-spacer")
+            yield Static("", id="header-conn")
+
+        # Main content area
+        with Horizontal(id="content"):
+            # Sidebar (file tree placeholder)
+            with VerticalScroll(id="sidebar"):
+                yield Static("FILES", classes="sidebar-section")
+                yield Static("No workspace open", classes="sidebar-item placeholder")
+                yield Static("─────────", classes="separator")
+                yield Static("SESSIONS", classes="sidebar-section")
+                yield Static("New chat", classes="sidebar-item active")
+
+            # Main chat area
+            with VerticalScroll(id="chat-wrapper"):
+                with VerticalScroll(id="chat"):
+                    yield Static(
+                        "Type a message to start...\nUse /help for commands",
+                        classes="placeholder",
+                        id="welcome",
+                    )
+                # Input area
+                with Container(id="input-area"):
+                    yield InputBox(id="input-box")
+                    yield Button("Send", id="send-btn", variant="primary")
+
+        # Status bar
+        with StatusBar(id="status-bar"):
+            pass
+
+    # -------------------------------------------------------------------------
+    # Lifecycle
+    # -------------------------------------------------------------------------
 
     async def on_mount(self) -> None:
-        """应用启动时连接 WebSocket"""
-        status_bar = self.query_one("#status-bar", StatusBar)
-        status_bar.update_connection(False)
+        """Connect to server on startup."""
+        self._update_header_mode()
+        self._update_header_conn(connected=False)
 
         try:
             from jojo_code.cli.ws_client import WSClient
 
             self._ws_client = WSClient(self.server_url)
             await self._ws_client.connect()
-            status_bar.update_connection(True)
+            self._connected = True
+            self._update_header_conn(connected=True)
 
-            # 获取模型信息
             model = await self._ws_client.get_model()
-            status_bar.update_model(model)
+            self._update_header_status(model)
 
-            # 获取统计信息
             stats = await self._ws_client.get_stats()
-            status_bar.update_stats(
-                stats.get("messages", 0),
-                stats.get("tokens", 0),
+            status_bar = self.query_one("#status-bar", StatusBar)
+            status_bar.update(
+                model=model or "unknown",
+                connected=True,
+                messages=stats.get("messages", 0),
+                tokens=stats.get("tokens", 0),
             )
+
         except Exception as e:
             logger.error(f"Connection failed: {e}")
-            chat = self.query_one("#chat", ChatView)
-            chat.add_assistant_message(
-                f"⚠️ 无法连接到服务: {e}\n请确保服务已启动: jojo-code server start"
-            )
+            self._connected = False
+            self._update_header_conn(connected=False)
+            self._update_header_status(f"Disconnected: {e}")
+
+    # -------------------------------------------------------------------------
+    # Event handlers
+    # -------------------------------------------------------------------------
 
     def on_new_message(self, event: NewMessage) -> None:
-        """处理新消息"""
+        """Handle new message from input box."""
         content = event.content
 
-        # 处理斜杠命令
         if content.startswith("/"):
             self._handle_command(content)
             return
 
-        # 发送消息
         asyncio.create_task(self._send_message(content))
 
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button presses."""
+        if event.button.id == "send-btn":
+            input_box = self.query_one("#input-box", InputBox)
+            content = input_box.value.strip()
+            if content:
+                self.on_new_message(NewMessage(content))
+                input_box.value = ""
+
     def _handle_command(self, cmd: str) -> None:
-        """处理斜杠命令"""
+        """Process slash commands."""
         parts = cmd.strip().split()
         command = parts[0].lower()
-        chat = self.query_one("#chat", ChatView)
+        chat = self.query_one("#chat", VerticalScroll)
 
-        if command == "/help":
-            help_text = (
-                "可用命令:\n"
-                "  /mode [plan|build]  - 切换模式\n"
-                "  /clear              - 清空对话\n"
-                "  /quit, /exit        - 退出"
-            )
-            chat.add_assistant_message(help_text)
+        commands = {
+            "/help": "Commands:\n  /mode [plan|build] - Switch mode\n  /clear - Clear chat\n  /quit - Quit",
+            "/clear": "action_clear",
+            "/quit": "action_quit",
+            "/exit": "action_quit",
+        }
+
+        if command in ("/mode",) and len(parts) > 1:
+            new_mode = parts[1] if parts[1] in ("plan", "build") else "build"
+            self._mode = new_mode
+            self._update_header_mode()
+            self._add_system_message(f"Mode: {new_mode}")
 
         elif command == "/clear":
             self.action_clear()
 
-        elif command == "/mode":
-            if len(parts) > 1:
-                self._mode = parts[1] if parts[1] in ("plan", "build") else "build"
-            else:
-                self._mode = "plan" if self._mode == "build" else "build"
-            status_bar = self.query_one("#status-bar", StatusBar)
-            status_bar.update_mode(self._mode)
-            chat.add_assistant_message(f"模式已切换为: {self._mode}")
-
         elif command in ("/quit", "/exit"):
             self.exit()
 
+        elif command in commands:
+            result = commands[command]
+            if isinstance(result, str) and result.startswith("action_"):
+                getattr(self, result)()
+            else:
+                self._add_system_message(result)
+
         else:
-            chat.add_assistant_message(f"未知命令: {command}")
+            self._add_system_message(f"Unknown: {command}")
 
     async def _send_message(self, message: str) -> None:
-        """发送消息到服务端"""
-        chat = self.query_one("#chat", ChatView)
+        """Send message and handle streaming response."""
+        chat = self.query_one("#chat", VerticalScroll)
         input_box = self.query_one("#input-box", InputBox)
         status_bar = self.query_one("#status-bar", StatusBar)
 
-        # 显示用户消息
-        chat.add_user_message(message)
+        # Remove welcome placeholder
+        welcome = self.query_one("#welcome", Static)
+        if welcome:
+            welcome.remove()
 
-        # 禁用输入
-        input_box.disable()
+        # Show user message
+        self._add_user_message(message)
+        input_box.value = ""
 
-        # 显示加载状态
-        chat.add_loading()
+        # Show loading
+        loading = Static(" ◐ thinking...", id="loading", classes="loading-dots")
+        chat.mount(loading)
+        chat.scroll_end(animate=False)
 
         try:
-            if self._ws_client is None:
+            if not self._ws_client:
                 from jojo_code.cli.ws_client import WSClient
 
                 self._ws_client = WSClient(self.server_url)
                 await self._ws_client.connect()
-                status_bar.update_connection(True)
+                self._connected = True
+                self._update_header_conn(connected=True)
 
-            # 流式接收响应
             full_response = ""
-            async for chunk in self._ws_client.stream("chat", {"message": message, "stream": True}):
-                if chunk.type == "thinking":
-                    pass  # 思考过程不显示
-
-                elif chunk.type == "tool_call":
-                    chat.add_tool_call(chunk.tool_name, "running")
-
-                elif chunk.type == "tool_result":
-                    chat.update_tool_status(chunk.tool_name, "completed")
-
+            async for chunk in self._ws_client.stream("chat", {"message": message}):
+                if chunk.type == "tool_call":
+                    loading.update(f" ◑ {chunk.tool_name}")
                 elif chunk.type == "content":
                     full_response += chunk.text
-
                 elif chunk.type == "done":
                     break
 
-            # 移除加载状态，显示完整响应
-            chat.remove_loading()
-            if full_response:
-                chat.add_assistant_message(full_response)
+            loading.remove()
 
-            # 更新统计
+            if full_response:
+                self._add_assistant_message(full_response)
+
             stats = await self._ws_client.get_stats()
-            status_bar.update_stats(
-                stats.get("messages", 0),
-                stats.get("tokens", 0),
+            status_bar.update(
+                connected=True,
+                messages=stats.get("messages", 0),
+                tokens=stats.get("tokens", 0),
             )
 
         except Exception as e:
-            chat.remove_loading()
-            chat.add_assistant_message(f"❌ 错误: {e}")
-            status_bar.update_connection(False)
+            loading.remove()
+            self._add_assistant_message(f"Error: {e}")
+            self._connected = False
+            self._update_header_conn(connected=False)
+            status_bar.update(connected=False)
 
-        finally:
-            input_box.enable()
+    # -------------------------------------------------------------------------
+    # Actions
+    # -------------------------------------------------------------------------
 
     def action_clear(self) -> None:
-        """清空对话"""
-        chat = self.query_one("#chat", ChatView)
-        chat.clear_messages()
+        """Clear chat messages."""
+        chat = self.query_one("#chat", VerticalScroll)
+        chat.remove_children()
+        chat.mount(
+            Static(
+                "Type a message to start...\nUse /help for commands",
+                classes="placeholder",
+                id="welcome",
+            )
+        )
         if self._ws_client:
             asyncio.create_task(self._ws_client.clear())
 
-    def action_toggle_mode(self) -> None:
-        """切换模式"""
-        self._mode = "plan" if self._mode == "build" else "build"
-        status_bar = self.query_one("#status-bar", StatusBar)
-        status_bar.update_mode(self._mode)
+    def action_quit(self) -> None:
+        """Quit application."""
+        self.exit()
+
+    def action_toggle_sidebar(self) -> None:
+        """Toggle sidebar visibility."""
+        sidebar = self.query_one("#sidebar")
+        self._sidebar_visible = not self._sidebar_visible
+        if self._sidebar_visible:
+            sidebar.styles.width = "26"
+        else:
+            sidebar.styles.width = "0"
+
+    # -------------------------------------------------------------------------
+    # Helpers
+    # -------------------------------------------------------------------------
+
+    def _add_user_message(self, content: str) -> None:
+        """Add a user message bubble."""
+        chat = self.query_one("#chat", VerticalScroll)
+        bubble = Static(content, classes="message-user")
+        chat.mount(bubble)
+        chat.scroll_end(animate=False)
+
+    def _add_assistant_message(self, content: str) -> None:
+        """Add an assistant message bubble."""
+        chat = self.query_one("#chat", VerticalScroll)
+        bubble = Static(content, classes="message-assistant")
+        chat.mount(bubble)
+        chat.scroll_end(animate=False)
+
+    def _add_system_message(self, content: str) -> None:
+        """Add a system message."""
+        chat = self.query_one("#chat", VerticalScroll)
+        msg = Static(content, classes="message-tool")
+        chat.mount(msg)
+        chat.scroll_end(animate=False)
+
+    def _update_header_mode(self) -> None:
+        """Update header mode indicator."""
+        mode = self.query_one("#header-mode", Static)
+        mode.update(self._mode.upper())
+        mode.styles.color = (
+            COLORS["accent_purple"] if self._mode == "build" else COLORS["accent_blue"]
+        )
+
+    def _update_header_conn(self, connected: bool) -> None:
+        """Update header connection status."""
+        conn = self.query_one("#header-conn", Static)
+        if connected:
+            conn.update("● Connected")
+            conn.styles.color = COLORS["accent_green"]
+        else:
+            conn.update("○ Disconnected")
+            conn.styles.color = COLORS["accent_red"]
+
+    def _update_header_status(self, text: str) -> None:
+        """Update header status text."""
+        status = self.query_one("#header-status", Static)
+        status.update(text)
