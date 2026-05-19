@@ -75,7 +75,9 @@ async def test_screenshot_empty_state(app):
         print(f"\n✅ Baseline updated: {path}")
         return
 
-    assert baseline.exists(), f"Baseline not found: {baseline}. Run with SNAPSHOT_UPDATE=1 to generate."
+    assert baseline.exists(), (
+        f"Baseline not found: {baseline}. Run with SNAPSHOT_UPDATE=1 to generate."
+    )
 
 
 @pytest.mark.asyncio
