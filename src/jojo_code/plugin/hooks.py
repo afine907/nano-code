@@ -1,8 +1,12 @@
 """Plugin hook system for lifecycle and event callbacks"""
 
+import asyncio
+import logging
 from collections import defaultdict
 from collections.abc import Callable
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 # Supported hook names
 HOOK_BEFORE_TOOL_CALL = "before_tool_call"
@@ -59,7 +63,7 @@ class HookDispatcher:
             self._handlers[name].remove(handler)
 
     def dispatch(self, name: str, *args: Any, **kwargs: Any) -> list[Any]:
-        """Dispatch a hook event to all handlers
+        """Dispatch a hook event to all handlers (sync and async)
 
         Args:
             name: Hook name
@@ -73,7 +77,25 @@ class HookDispatcher:
         for handler in self._handlers.get(name, []):
             try:
                 result = handler(*args, **kwargs)
-                results.append(result)
+                # Support async handlers
+                if asyncio.iscoroutine(result):
+                    try:
+                        loop = asyncio.get_event_loop()
+                        if loop.is_running():
+                            # Create task but don't await - log warning for fire-and-forget
+                            asyncio.create_task(result)
+                            logger.warning(
+                                f"Async hook handler '{handler.__name__}' for '{name}' "
+                                "is fire-and-forget - results not collected"
+                            )
+                        else:
+                            results.append(loop.run_until_complete(result))
+                    except RuntimeError as e:
+                        logger.warning(
+                            f"Could not run async hook handler '{handler.__name__}' for '{name}': {e}"
+                        )
+                else:
+                    results.append(result)
             except Exception:
                 # Don't let one handler break others
                 pass
