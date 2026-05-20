@@ -1,7 +1,7 @@
 # jojo-code 参考 Claude Code 改进方案
 
 > 基于 Claude Code 源码分析 (2026-03-31 泄露版)
-> 日期: 2026-05-17
+> 日期: 2026-05-20 (更新)
 
 ---
 
@@ -14,7 +14,7 @@ jojo-code/
 ├── src/jojo_code/
 │   ├── agent/           # LangGraph 状态机
 │   │   ├── graph.py     # 状态图定义
-│   │   ├── nodes.py     # 节点实现
+│   │   ├── nodes.py     # 节点实现 (含 hook 集成)
 │   │   └── state.py     # 状态定义
 │   ├── tools/           # 工具系统 (~20个)
 │   │   └── registry.py  # 工具注册中心
@@ -23,8 +23,26 @@ jojo-code/
 │   │   ├── api_server.py
 │   │   └── config.py
 │   ├── cli/             # CLI 入口
-│   ├── security/        # 权限系统
-│   └── session/         # 会话管理
+│   │   ├── app.py       # TUI 应用 (Claude Code 风格)
+│   │   ├── theme.py     # 深色主题
+│   │   ├── main.py      # CLI 命令 (含 plugin 子命令)
+│   │   └── views/       # TUI 视图组件
+│   ├── security/         # 权限系统
+│   ├── session/         # 会话管理
+│   ├── plugin/          # 插件系统 (T4-2)
+│   │   ├── base.py      # BasePlugin 基类
+│   │   ├── registry.py  # 插件注册中心 (单例)
+│   │   ├── discovery.py  # 插件发现
+│   │   ├── loader.py    # 插件加载器
+│   │   └── hooks.py     # HookDispatcher
+│   ├── skills/          # Skills 系统 (T3-2)
+│   │   ├── base.py
+│   │   ├── manager.py
+│   │   └── builtins.py
+│   ├── mcp/            # MCP 客户端 (T2-2)
+│   │   └── client.py
+│   ├── task/            # 任务系统 (T1-2)
+│   └── models/          # 多模型支持 (T4-1)
 ```
 
 ### 1.2 Claude Code 架构
@@ -54,11 +72,12 @@ Claude Code (TypeScript)
 | **状态机** | LangGraph (简单) | LangGraph + Task状态机 | 中 |
 | **工具数量** | ~20 | 44 | 大 |
 | **权限系统** | 基础 (3级) | 精细 (auto/manual/bypass + 规则引擎) | 大 |
-| **任务系统** | 无 | 7种任务类型 | 很大 |
-| **子 Agent** | 无 | AgentTool | 很大 |
-| **Skills** | 无 | SkillTool | 很大 |
-| **MCP 支持** | 无 | 完整支持 | 很大 |
-| **TUI** | 无 | Ink (React) | 大 |
+| **任务系统** | ✅ 6种任务类型 | 7种任务类型 | 小 |
+| **子 Agent** | ✅ SubAgent | AgentTool | 小 |
+| **Skills** | ✅ Skills 系统 | SkillTool | 小 |
+| **MCP 支持** | ✅ MCP 客户端 | 完整支持 | 中 |
+| **TUI** | ✅ Textual TUI | Ink (React) | 小 |
+| **插件系统** | ✅ 基础版 (hook) | 完整插件生态 | 大 |
 | **会话记忆** | 基础 | SessionMemory 服务 | 中 |
 
 ---
@@ -490,6 +509,9 @@ class SkillTool(BaseTool):
          ├── MCP 工具发现
          └── MCP 资源管理
 
+  [T2-2b] MCP Server 支持                   3天    T2-2    ⬜
+         └── MCP Server 实现
+
   [T2-3] 工具扩展 (+20 工具)                 3天    T0-3    ✅ 完成
          ├── WebFetchTool (网页抓取)
          ├── EditTool (文件编辑)
@@ -504,18 +526,18 @@ class SkillTool(BaseTool):
   任务                                    时间    依赖    状态
   ────────────────────────────────────────────────────────────────────────────
   [T3-1] TUI 界面 (Textual)                 5天    T2-1    ✅ 完成
-         ├── 主界面布局
-         ├── 消息展示
-         ├── 工具权限审批
-         └── 进度显示
+         ├── Claude Code 风格深色主题 (紫色强调色 #a855f7)
+         ├── Horizontal Header (模式指示器 + 连接状态)
+         ├── Sidebar (Files/Sessions 分区)
+         ├── Chat area (消息气泡: user/assistant/tool)
+         └── Status bar (模型/连接/消息统计)
 
   [T3-2] Skills 系统                        5天    T2-1    ✅ 完成
-         ├── Skill 定义格式
-         ├── SkillTool
-         ├── 内置 Skills
-         └── 动态加载
+         ├── Skill 定义格式 (skill.yaml)
+         ├── SkillManager (加载/管理)
+         └── 内置 Skills (builtins.py)
 
-  [T3-3] 会话记忆 (SessionMemory)           3天    -       ✅
+  [T3-3] 会话记忆 (SessionMemory)           3天    -       ✅ 完成
          ├── 短期记忆 (当前会话)
          ├── 长期记忆 (持久化)
          └── 记忆检索
@@ -527,15 +549,26 @@ class SkillTool(BaseTool):
   任务                                    时间    依赖    状态
   ────────────────────────────────────────────────────────────────────────────
   [T4-1] 多模型支持                         3天    -       ✅ 完成
-         ├── OpenAI 兼容
-         ├── Anthropic
+         ├── OpenAI 兼容 API
+         ├── Anthropic Claude
          ├── DeepSeek
-         └── 模型路由
+         ├── LongCat
+         └── 模型路由 (model routing)
 
-  [T4-2] 插件系统                           5天    T2-2    ⬜
-         ├── Plugin 接口
-         ├── 插件加载器
-         └── 官方插件集
+  [T4-2] 插件系统                           5天    T2-2    ✅ 完成
+         ├── Plugin 接口 (BasePlugin, PluginMetadata)
+         ├── PluginRegistry (单例模式, enable/disable)
+         ├── PluginDiscovery (目录/文件/entry points)
+         ├── PluginLoader
+         ├── HookDispatcher (before/after tool call, agent run, error)
+         ├── Hook 集成到 agent nodes
+         ├── CLI 插件命令: jojo plugin list/enable/disable/info
+         └── 16 个测试 (TDD 方式)
+
+  [T4-2b] 官方插件                         5天    T4-2    ⬜
+         ├── GitPlugin (git status/log/branch/diff)
+         ├── CodeReviewPlugin (安全/质量/风格检查)
+         └── TestGeneratorPlugin (测试生成)
 
   [T4-3] API Server 增强                    3天    T3-1    ⬜
          ├── RESTful API
@@ -582,10 +615,10 @@ class SkillTool(BaseTool):
                               里程碑
 ══════════════════════════════════════════════════════════════════════════════
 
-  M1 (Week 2)   - 权限系统 + 任务框架完成 → 可用性提升
-  M2 (Week 5)   - 子 Agent + MCP + 工具扩展 → 能力对齐 Claude Code
-  M3 (Week 7)   - TUI + Skills + 会话记忆 → 体验完善
-  M4 (Week 10)  - 生态集成 → 可发布版本
+  M1 (Week 2)   - 权限系统 + 任务框架完成 → 可用性提升 ✅
+  M2 (Week 5)   - 子 Agent + MCP + 工具扩展 → 能力对齐 Claude Code ✅
+  M3 (Week 7)   - TUI + Skills + 会话记忆 → 体验完善 ✅
+  M4 (Week 10)  - 插件系统 + 生态集成 → 可发布版本 (进行中)
 
 ══════════════════════════════════════════════════════════════════════════════
 
