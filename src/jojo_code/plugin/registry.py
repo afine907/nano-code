@@ -78,3 +78,23 @@ class PluginRegistry:
     def clear(self) -> None:
         """Clear all plugins (for testing)"""
         self._plugins.clear()
+
+    def enable(self, name: str) -> None:
+        """Enable a plugin (calls on_enable hook)
+
+        Args:
+            name: Plugin name
+        """
+        plugin = self._plugins.get(name)
+        if plugin and hasattr(plugin, "on_enable"):
+            plugin.on_enable()
+
+    def disable(self, name: str) -> None:
+        """Disable a plugin (calls on_disable hook)
+
+        Args:
+            name: Plugin name
+        """
+        plugin = self._plugins.get(name)
+        if plugin and hasattr(plugin, "on_disable"):
+            plugin.on_disable()

@@ -47,6 +47,25 @@ app.add_middleware(
 _agent = None
 _agent_lock = asyncio.Lock()
 _conversation_memory = None
+_plugins_initialized = False
+
+
+async def _ensure_plugins_initialized() -> None:
+    """Ensure plugins are initialized (called on first request)"""
+    global _plugins_initialized
+    if _plugins_initialized:
+        return
+
+    from jojo_code.plugin.integration import init_plugins, register_plugin_tools
+
+    # Initialize and load plugins
+    init_plugins()
+
+    # Register plugin tools with tool registry
+    register_plugin_tools()
+
+    _plugins_initialized = True
+    logger.info("Plugins initialized")
 
 
 async def get_agent():
@@ -130,16 +149,31 @@ async def handle_chat_ws(params: dict, ws: WebSocket, req_id: str | int | None) 
         await _send_response(ws, req_id, {"content": "错误: message 参数不能为空"})
         return
 
+    # Initialize plugins on first request
+    await _ensure_plugins_initialized()
+
     agent = await get_agent()
 
     from jojo_code.agent.state import create_initial_state
 
     state = create_initial_state(message)
 
-    if stream:
-        await _stream_chat(agent, state, ws, req_id)
-    else:
-        await _sync_chat(agent, state, ws, req_id)
+    # Dispatch before_agent_run hook
+    from jojo_code.plugin.hooks import HOOK_BEFORE_AGENT_RUN
+    from jojo_code.plugin.integration import dispatch_hook
+
+    dispatch_hook(HOOK_BEFORE_AGENT_RUN, message)
+
+    try:
+        if stream:
+            await _stream_chat(agent, state, ws, req_id)
+        else:
+            await _sync_chat(agent, state, ws, req_id)
+    finally:
+        # Dispatch after_agent_run hook
+        from jojo_code.plugin.hooks import HOOK_AFTER_AGENT_RUN
+
+        dispatch_hook(HOOK_AFTER_AGENT_RUN)
 
 
 async def _sync_chat(agent, state: dict, ws: WebSocket, req_id: str | int | None) -> None:

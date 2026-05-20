@@ -256,6 +256,232 @@ def start_tui(args):
         pass
 
 
+# ========== 插件管理 ==========
+
+PLUGIN_CONFIG_FILE = Path.home() / ".jojo-code" / "plugin_config.json"
+
+
+def _load_plugin_config() -> dict:
+    """加载插件配置"""
+    if PLUGIN_CONFIG_FILE.exists():
+        try:
+            return json.loads(PLUGIN_CONFIG_FILE.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return {"enabled_plugins": [], "disabled_plugins": []}
+    return {"enabled_plugins": [], "disabled_plugins": []}
+
+
+def _save_plugin_config(config: dict) -> None:
+    """保存插件配置"""
+    PLUGIN_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    PLUGIN_CONFIG_FILE.write_text(
+        json.dumps(config, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+
+
+def _get_all_plugins() -> list[tuple[str, dict]]:
+    """获取所有插件及其信息"""
+    from pathlib import Path
+
+    from jojo_code.plugin.discovery import PluginDiscovery
+    from jojo_code.plugin.integration import get_plugin_registry
+
+    plugins = []
+
+    # 获取已注册插件
+    registry = get_plugin_registry()
+    for name in registry.list_plugins():
+        plugin = registry.get(name)
+        if plugin:
+            plugins.append(
+                (
+                    name,
+                    {
+                        "name": plugin.metadata.name,
+                        "version": plugin.metadata.version,
+                        "description": plugin.metadata.description,
+                        "author": plugin.metadata.author,
+                        "tags": plugin.metadata.tags,
+                        "permission": (
+                            plugin.permission.value
+                            if hasattr(plugin.permission, "value")
+                            else str(plugin.permission)
+                        ),
+                        "enabled": True,
+                        "registered": True,
+                    },
+                )
+            )
+
+    # 发现社区插件
+    plugins_dir = Path.home() / ".jojo-code" / "plugins"
+    if plugins_dir.exists():
+        discovery = PluginDiscovery()
+        discovered = discovery.discover(plugins_dir)
+        for plugin in discovered:
+            name = plugin.metadata.name
+            # 跳过已注册的
+            if any(p[0] == name for p in plugins):
+                continue
+            plugins.append(
+                (
+                    name,
+                    {
+                        "name": plugin.metadata.name,
+                        "version": plugin.metadata.version,
+                        "description": plugin.metadata.description,
+                        "author": plugin.metadata.author,
+                        "tags": plugin.metadata.tags,
+                        "permission": (
+                            plugin.permission.value
+                            if hasattr(plugin.permission, "value")
+                            else str(plugin.permission)
+                        ),
+                        "enabled": False,
+                        "registered": False,
+                    },
+                )
+            )
+
+    return plugins
+
+
+def plugin_list(args):
+    """列出所有插件"""
+    plugins = _get_all_plugins()
+    config = _load_plugin_config()
+    enabled_set = set(config.get("enabled_plugins", []))
+    disabled_set = set(config.get("disabled_plugins", []))
+
+    if not plugins:
+        print("📦 未发现任何插件")
+        print("\n安装插件：")
+        print("  1. 将插件放置到 ~/.jojo-code/plugins/ 目录")
+        print("  2. 或通过 entry points 安装")
+        return
+
+    print("📦 jojo-code 插件列表")
+    print("=" * 60)
+
+    enabled_count = 0
+    disabled_count = 0
+
+    for name, info in sorted(plugins):
+        # 判断状态
+        if name in enabled_set or (name not in disabled_set and info.get("registered")):
+            status = "🟢 已启用"
+            enabled_count += 1
+        else:
+            status = "⚪ 已禁用"
+            disabled_count += 1
+
+        print(f"\n{info['name']} v{info['version']} [{status}]")
+        print(f"   {info['description']}")
+        print(f"   作者: {info['author']}")
+        if info.get("tags"):
+            print(f"   标签: {', '.join(info['tags'])}")
+
+    print("\n" + "=" * 60)
+    print(f"共 {len(plugins)} 个插件：{enabled_count} 已启用，{disabled_count} 已禁用")
+
+
+def plugin_enable(args):
+    """启用插件"""
+    plugin_name = args.name
+    config = _load_plugin_config()
+
+    # 检查插件是否存在
+    from jojo_code.plugin.integration import get_plugin_registry
+
+    registry = get_plugin_registry()
+    plugin = registry.get(plugin_name)
+
+    # 移除禁用列表
+    if plugin_name in config.get("disabled_plugins", []):
+        config["disabled_plugins"].remove(plugin_name)
+
+    # 添加启用列表
+    if plugin_name not in config.get("enabled_plugins", []):
+        config.setdefault("enabled_plugins", []).append(plugin_name)
+
+    _save_plugin_config(config)
+
+    if plugin:
+        registry.enable(plugin_name)
+        print(f"✅ 插件 '{plugin_name}' 已启用")
+    else:
+        print(f"✅ 插件 '{plugin_name}' 已添加到启用列表（下次启动时加载）")
+
+
+def plugin_disable(args):
+    """禁用插件"""
+    plugin_name = args.name
+    config = _load_plugin_config()
+
+    # 检查插件是否存在
+    from jojo_code.plugin.integration import get_plugin_registry
+
+    registry = get_plugin_registry()
+    plugin = registry.get(plugin_name)
+
+    # 移除启用列表
+    if plugin_name in config.get("enabled_plugins", []):
+        config["enabled_plugins"].remove(plugin_name)
+
+    # 添加禁用列表
+    if plugin_name not in config.get("disabled_plugins", []):
+        config.setdefault("disabled_plugins", []).append(plugin_name)
+
+    _save_plugin_config(config)
+
+    if plugin:
+        registry.disable(plugin_name)
+        print(f"✅ 插件 '{plugin_name}' 已禁用")
+    else:
+        print(f"✅ 插件 '{plugin_name}' 已添加到禁用列表")
+
+
+def plugin_info(args):
+    """显示插件详情"""
+    plugin_name = args.name
+
+    from jojo_code.plugin.integration import get_plugin_registry
+
+    registry = get_plugin_registry()
+    plugin = registry.get(plugin_name)
+
+    if not plugin:
+        print(f"❌ 插件 '{plugin_name}' 未找到")
+        return
+
+    print(f"📋 插件详情: {plugin.metadata.name}")
+    print("=" * 60)
+    print(f"版本:     {plugin.metadata.version}")
+    print(f"描述:     {plugin.metadata.description}")
+    print(f"作者:     {plugin.metadata.author}")
+    tags_str = ", ".join(plugin.metadata.tags) if plugin.metadata.tags else "无"
+    perm_str = plugin.permission.value if hasattr(plugin.permission, "value") else plugin.permission
+    has_sandbox = hasattr(plugin, "sandbox") and plugin.sandbox and plugin.sandbox.restricted
+    sandbox_str = "有" if has_sandbox else "无"
+    print(f"标签:     {tags_str}")
+    print(f"权限:     {perm_str}")
+    print(f"沙箱:     {sandbox_str}")
+
+    # 提供的工具
+    tools = plugin.get_tools()
+    if tools:
+        print(f"\n提供的工具 ({len(tools)}):")
+        for tool in tools:
+            print(f"  - {tool.name}: {tool.description[:50]}...")
+
+    # 注册的钩子
+    hooks = plugin.get_hooks()
+    if hooks:
+        print(f"\n注册的钩子 ({len(hooks)}):")
+        for hook_name in hooks.keys():
+            print(f"  - {hook_name}")
+
+
 # ========== 主入口 ==========
 
 
@@ -293,6 +519,21 @@ def main():
     config_get_parser = config_sub.add_parser("get", help="获取配置值")
     config_get_parser.add_argument("key", help="配置项")
 
+    # plugin 子命令
+    plugin_parser = subparsers.add_parser("plugin", help="管理插件")
+    plugin_sub = plugin_parser.add_subparsers(dest="action")
+    plugin_list_parser = plugin_sub.add_parser("list", help="列出所有插件")
+    plugin_list_parser.set_defaults(func=plugin_list)
+    plugin_enable_parser = plugin_sub.add_parser("enable", help="启用插件")
+    plugin_enable_parser.add_argument("name", help="插件名称")
+    plugin_enable_parser.set_defaults(func=plugin_enable)
+    plugin_disable_parser = plugin_sub.add_parser("disable", help="禁用插件")
+    plugin_disable_parser.add_argument("name", help="插件名称")
+    plugin_disable_parser.set_defaults(func=plugin_disable)
+    plugin_info_parser = plugin_sub.add_parser("info", help="显示插件详情")
+    plugin_info_parser.add_argument("name", help="插件名称")
+    plugin_info_parser.set_defaults(func=plugin_info)
+
     args = parser.parse_args()
 
     if args.command is None:
@@ -315,6 +556,17 @@ def main():
             config_get(args)
         else:
             config_parser.print_help()
+    elif args.command == "plugin":
+        if args.action == "list":
+            plugin_list(args)
+        elif args.action == "enable":
+            plugin_enable(args)
+        elif args.action == "disable":
+            plugin_disable(args)
+        elif args.action == "info":
+            plugin_info(args)
+        else:
+            plugin_parser.print_help()
     else:
         parser.print_help()
 

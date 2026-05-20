@@ -1,0 +1,41 @@
+# Plugin Configuration for jojo-code
+#
+# This file configures which plugins are enabled and their settings.
+# Place this file in your project root.
+#
+# Alternatively, you can configure plugins in:
+# - pyproject.toml under [tool.jojo-code.plugins]
+# - Environment variables (JOJO_PLUGIN_*)
+
+# List of enabled plugins (empty = all enabled)
+plugins:
+  enabled:
+    - code-review
+    - test-generator
+    - git
+  # Or disable specific plugins:
+  # disabled:
+  #   - some-plugin
+
+# Plugin-specific settings
+plugin_settings:
+  # Code review plugin settings
+  code-review:
+    # Maximum file size to scan (KB)
+    max_file_size: 500
+    # Additional security patterns to check
+    security_patterns:
+      - 'password\s*=\s*["\'][^"\']+["\']'
+      - 'api[_-]?key\s*=\s*["\'][A-Za-z0-9]+["\']'
+
+  # Test generator plugin settings
+  test-generator:
+    # Default test framework
+    framework: pytest
+    # Generate type hints in tests
+    type_hints: true
+
+  # Git plugin settings
+  git:
+    # Default number of commits to show in log
+    log_limit: 10

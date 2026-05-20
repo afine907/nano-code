@@ -1,5 +1,6 @@
 """Agent 节点实现"""
 
+import logging
 from typing import Any, Literal
 
 from langchain_core.language_models import BaseChatModel
@@ -7,7 +8,11 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMe
 
 from jojo_code.agent.modes import PlanMode
 from jojo_code.agent.state import AgentState
+from jojo_code.plugin.hooks import HOOK_AFTER_TOOL_CALL, HOOK_BEFORE_TOOL_CALL, HOOK_ON_ERROR
+from jojo_code.plugin.integration import dispatch_hook
 from jojo_code.tools.registry import ToolRegistry
+
+logger = logging.getLogger(__name__)
 
 # 最大迭代次数
 MAX_ITERATIONS = 50
@@ -159,14 +164,30 @@ def execute_node(state: AgentState) -> dict[str, Any]:
     results: list[str] = []
 
     for tool_call in state["tool_calls"]:
+        tool_name = tool_call.get("name", "unknown")
+        tool_args = tool_call.get("args", {})
+
         try:
+            # Dispatch before_tool_call hook
+            dispatch_hook(HOOK_BEFORE_TOOL_CALL, tool_name, tool_args)
+
             if "name" not in tool_call or "args" not in tool_call:
                 results.append("Error: tool_call missing 'name' or 'args' key")
+                dispatch_hook(HOOK_ON_ERROR, tool_name, tool_args, "Missing 'name' or 'args' key")
                 continue
-            result = registry.execute(tool_call["name"], tool_call["args"])
+
+            result = registry.execute(tool_name, tool_args)
             results.append(result)
+
+            # Dispatch after_tool_call hook
+            dispatch_hook(HOOK_AFTER_TOOL_CALL, tool_name, tool_args, result)
+
         except Exception as e:
-            results.append(f"Error executing {tool_call.get('name', 'unknown')}: {e}")
+            error_msg = f"Error executing {tool_name}: {e}"
+            results.append(error_msg)
+            logger.error(error_msg)
+            # Dispatch error hook
+            dispatch_hook(HOOK_ON_ERROR, tool_name, tool_args, str(e))
 
     return {
         "tool_results": results,

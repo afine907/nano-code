@@ -6,6 +6,7 @@ from jojo_code.plugin.base import (
     PluginPermission,
     PluginSandbox,
 )
+from jojo_code.plugin.config import PluginConfig, get_plugin_config
 from jojo_code.plugin.discovery import PluginDiscovery
 from jojo_code.plugin.hooks import HookDispatcher, hook
 from jojo_code.plugin.loader import PluginLoader
@@ -16,6 +17,8 @@ __all__ = [
     "PluginMetadata",
     "PluginPermission",
     "PluginSandbox",
+    "PluginConfig",
+    "get_plugin_config",
     "PluginRegistry",
     "PluginDiscovery",
     "PluginLoader",

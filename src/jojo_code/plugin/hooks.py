@@ -59,7 +59,7 @@ class HookDispatcher:
             self._handlers[name].remove(handler)
 
     def dispatch(self, name: str, *args: Any, **kwargs: Any) -> list[Any]:
-        """Dispatch a hook event to all handlers
+        """Dispatch a hook event to all handlers (sync and async)
 
         Args:
             name: Hook name
@@ -72,8 +72,24 @@ class HookDispatcher:
         results = []
         for handler in self._handlers.get(name, []):
             try:
+                import asyncio
+
                 result = handler(*args, **kwargs)
-                results.append(result)
+                # Support async handlers - if result is a coroutine, schedule it
+                if asyncio.iscoroutine(result):
+                    # For now, just schedule and don't await (fire-and-forget)
+                    # In production, you'd want to properly await these
+                    try:
+                        loop = asyncio.get_event_loop()
+                        if loop.is_running():
+                            asyncio.create_task(result)
+                        else:
+                            loop.run_until_complete(result)
+                    except RuntimeError:
+                        # No event loop, just ignore async handlers for now
+                        pass
+                else:
+                    results.append(result)
             except Exception:
                 # Don't let one handler break others
                 pass
